@@ -110,59 +110,26 @@ def fetch_tiles(tile_tuples, tile_folder: str) -> None:
 def load_tile_image(file_path: str) -> np.ndarray:
     image = Image.open(file_path)
     return np.array(image)
-    # img = cv2.imread(file_path)
-    # return img
 
 
-def crop_bbox_from_tiles(bbox_global, zoom, tile_folder="./tiles", tile_extension="webp", display=False):
+def get_cropped_tile_from_global_bbox(global_bbox: list, zoom_level: int) -> np.ndarray:
     """
-    Crops a region from tile images based on a global-coordinate bounding box.
+    Returns an image (as np.ndarray) of a global bounding box at a specified zoom level
 
     Parameters:
         bbox_global (list): [minLon, minLat, maxLon, maxLat]
-        zoom (int): Zoom level of the tiles
-        tile_folder (str): Folder where tiles are stored
-        tile_extension (str): File extension of the tile images
-        display (bool): Whether to display the cropped image
+        zoom_level (int): Zoom level of image
 
     Returns:
-        cropped_image (np.ndarray): Cropped image of the region
+        cropped_image (np.ndarray): Image contained within the provided global bounding box
     """
-    minLon, minLat, maxLon, maxLat = bbox_global
-    tile_size = 512 
+    pass
 
-    # Convert bounding box corners to tile and pixel coordinates
-    x_tile_min, y_tile_min, x_px_min, y_px_min = coordinate_utils.latlng_to_tile_and_pixel_xy(zoom, maxLat, minLon)
-    x_tile_max, y_tile_max, x_px_max, y_px_max = coordinate_utils.latlng_to_tile_and_pixel_xy(zoom, minLat, maxLon)
-
-    # Create canvas for stitched image
-    stitched_width = (x_tile_max - x_tile_min + 1) * tile_size
-    stitched_height = (y_tile_max - y_tile_min + 1) * tile_size
-    stitched_image = np.zeros((stitched_height, stitched_width, 3), dtype=np.uint8)
-
-    # Load and stitch tiles
-    for x in range(x_tile_min, x_tile_max + 1):
-        for y in range(y_tile_min, y_tile_max + 1):
-            tile_path = f"{tile_folder}/{zoom}_{x}_{y}.{tile_extension}"
-            tile_img = load_tile_image(tile_path)
-            if tile_img is None:
-                continue
-            dx = (x - x_tile_min) * tile_size
-            dy = (y - y_tile_min) * tile_size
-            stitched_image[dy:dy+tile_size, dx:dx+tile_size] = tile_img
-
-    # Calculate crop coordinates relative to stitched image origin
-    crop_x1 = x_px_min
-    crop_y1 = y_px_min
-    crop_x2 = x_px_max + (x_tile_max - x_tile_min) * tile_size
-    crop_y2 = y_px_max + (y_tile_max - y_tile_min) * tile_size
-
-    # Crop the stitched image
-    cropped_image = stitched_image[crop_y1:crop_y2, crop_x1:crop_x2]
-
-    if display:
-        cv2.imshow("Cropped Region", cropped_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-    return 
+# To implement this, will need to:
+#
+#    1. Determine the tile/s we need (the tiles that this bounding box intersects)
+#       - Maybe splice these into 1 image for simplicity
+#
+#   2. Translate the global coordinates into pixel coordinates of this combined image
+#
+#   3. Crop the image at those pixel coordinates and return

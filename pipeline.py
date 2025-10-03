@@ -13,37 +13,6 @@ import pipeline_store
 TILE_FOLDER = "./tiles" 
 TILE_EXTENSION = "webp"
 
-def compute_iou(box1, box2):
-    # box format: [x1, y1, x2, y2] = [min_lon, min_lat, max_lon, max_lat]
-    x1 = max(box1[0], box2[0])
-    y1 = max(box1[1], box2[1])
-    x2 = min(box1[2], box2[2])
-    y2 = min(box1[3], box2[3])
-
-    inter_area = max(0, x2 - x1) * max(0, y2 - y1)
-    box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
-    box2_area = (box2[2] - box2[0]) * (box2[3] - box2[1])
-
-    union_area = box1_area + box2_area - inter_area
-    return inter_area / union_area if union_area > 0 else 0
-
-def non_max_suppression(ships, iou_threshold=0.5):
-    ships = sorted(ships, key=lambda s: s.confidence, reverse=True)
-    keep = []
-    suppressed = [False] * len(ships)
-
-    for i in range(len(ships)):
-        if suppressed[i]:
-            continue
-        keep.append(ships[i])
-        for j in range(i + 1, len(ships)):
-            if suppressed[j]:
-                continue
-            iou = compute_iou(ships[i].bbox, ships[j].bbox)
-            if iou > iou_threshold:
-                suppressed[j] = True
-
-    return keep
 
 def run_pipeline(geojson_bounds, pipeline_id, zoom_levels=[15]):
 
@@ -92,6 +61,8 @@ def run_pipeline(geojson_bounds, pipeline_id, zoom_levels=[15]):
     total_tiles = len(tile_tuples)
     current_tile = 0
     pipeline_store.update_pipeline_status(pipeline_id, pipeline_store.PipelineStage.CLASSIFYING, current_tile, total_tiles)
+
+    tile_to_ships = {}
 
     for tile_tuple in tile_to_detections.keys():
         # The detections within the current tile
@@ -155,7 +126,7 @@ def run_pipeline(geojson_bounds, pipeline_id, zoom_levels=[15]):
     for ships in tile_to_ships.values():
         all_ships.extend(ships)
 
-    filtered_ships = non_max_suppression(all_ships, 0.2)
+    filtered_ships = model_utils.non_max_suppression(all_ships, 0.2)
 
     # Return results -> convert go GeoJSON
     features = []

@@ -60,90 +60,6 @@ def merge_boxes(boxes, iou_threshold=0.4):
     merged = [boxes[i] for i in indices.flatten()]
     return merged
 
-def test(file_path):
-    image = tile_utils.load_tile_image(file_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    # ✅ Resize to 640×640
-    image_resized = cv2.resize(image, (640, 640))
-
-
-    # ✅ Normalize and reshape
-    input_image = image_resized.astype("float32") / 255.0
-    input_image = np.transpose(input_image, (2, 0, 1))         # [C, H, W]
-    input_image = np.expand_dims(input_image, axis=0)          # [1, C, H, W]
-
-    print("Running prediction...")
-    results = detection_model.predict(input_image)
-
-    predictions = np.squeeze(results[0])  # Shape: (8400, 6)
-
-
-    # Filter predictions
-    filtered_predictions = filter_predictions(predictions, 0.5)
-    
-    # Merge boxes
-    merged_boxes = merge_boxes(filtered_predictions)
-
-    for box in merged_boxes:
-        print(box)
-
-    for box in merged_boxes:
-        x_center, y_center, w, h, object_score, class_score = box
-    
-        # Convert center coordinates to corner coordinates
-        x_center = int(x_center)
-        y_center = int(y_center)
-        x1 = int(x_center - w / 2)
-        y1 = int(y_center - h / 2)
-        x2 = int(x_center + w / 2)
-        y2 = int(y_center + h / 2)
-    
-        # Draw bounding box
-        cv2.rectangle(image_resized, (x1, y1), (x2, y2), (0, 255, 0), 2)
-    
-        # Draw center point
-        cv2.circle(image_resized, (x_center, y_center), radius=2, color=(255, 0, 0), thickness=-1)
-    
-        # Add confidence score
-        cv2.putText(image_resized, f"Object: {object_score:.2f}", (x1 + 6, y1 - 6),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-
-    for i, box in enumerate(merged_boxes):
-        x_center, y_center, w, h, object_score, class_score = box
-    
-        # Convert to corner coordinates
-        x1 = int(x_center - w / 2)
-        y1 = int(y_center - h / 2)
-        x2 = int(x_center + w / 2)
-        y2 = int(y_center + h / 2)
-    
-        # Ensure coordinates are within image bounds
-        x1 = max(0, x1)
-        y1 = max(0, y1)
-        x2 = min(image_resized.shape[1], x2)
-        y2 = min(image_resized.shape[0], y2)
-    
-        # Crop the detected ship
-        ship_crop = image_resized[y1:y2, x1:x2]
-    
-        
-    
-        # Display classification result
-        label = f"Type: {class_name} ({class_conf:.2f})"
-        cv2.putText(image_resized, label, (x1 + 6, y2 + 16),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
-
-    # Convert BGR (OpenCV format) to RGB for correct display
-    image_rgb = cv2.cvtColor(image_resized, cv2.COLOR_BGR2RGB)
-    
-    # Display using matplotlib
-    plt.figure(figsize=(8, 8))
-    plt.imshow(image_rgb)
-    plt.axis('off')  # Hide axes
-    plt.title("Ship Detections")
-    plt.show()
-
 
 def detect_ships_in_image(image: np.ndarray) -> list:
     '''
@@ -154,7 +70,6 @@ def detect_ships_in_image(image: np.ndarray) -> list:
 
     # Resize to 640×640
     image_resized = cv2.resize(image, (640, 640))
-
 
     # Normalize and reshape
     input_image = image_resized.astype("float32") / 255.0
@@ -179,7 +94,7 @@ def detect_ships_in_image(image: np.ndarray) -> list:
     return merged_boxes
 
 def classify_image(ship_image: np.ndarray) -> str:
-    '''
+    """
     Classifies an image as a ship type (battleship, container, etc). Accepts a cropped image as input,
     and performs image transformations to prepare it for the classification model.
 
@@ -187,7 +102,7 @@ def classify_image(ship_image: np.ndarray) -> str:
         image (np.ndarray): The cropped image we are classifying
 
     Returns: The classification as a str
-    '''
+    """
     # Resize to classification model input size (e.g., 224×224)
     ship_resized = cv2.resize(ship_image, (224, 224))
     ship_input = ship_resized.astype("float32") / 255.0
@@ -203,5 +118,43 @@ def classify_image(ship_image: np.ndarray) -> str:
 
     return class_name
 
+
+
+def non_max_suppression(ships, iou_threshold=0.5):
+    """
+    Uses Non Max Suppression in global coordinate space to filter out duplicate detections.
+
+    Developed specifically for filtering duplicate detections of the same ships caused by 
+    running detections over the same area at more than 1 zoom level.
+    """
+    def compute_iou(box1, box2):
+        # box format: [x1, y1, x2, y2] = [min_lon, min_lat, max_lon, max_lat]
+        x1 = max(box1[0], box2[0])
+        y1 = max(box1[1], box2[1])
+        x2 = min(box1[2], box2[2])
+        y2 = min(box1[3], box2[3])
+
+        inter_area = max(0, x2 - x1) * max(0, y2 - y1)
+        box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
+        box2_area = (box2[2] - box2[0]) * (box2[3] - box2[1])
+
+        union_area = box1_area + box2_area - inter_area
+        return inter_area / union_area if union_area > 0 else 0
     
+    ships = sorted(ships, key=lambda s: s.confidence, reverse=True)
+    keep = []
+    suppressed = [False] * len(ships)
+
+    for i in range(len(ships)):
+        if suppressed[i]:
+            continue
+        keep.append(ships[i])
+        for j in range(i + 1, len(ships)):
+            if suppressed[j]:
+                continue
+            iou = compute_iou(ships[i].bbox, ships[j].bbox)
+            if iou > iou_threshold:
+                suppressed[j] = True
+
+    return keep
 
