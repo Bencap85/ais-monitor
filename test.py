@@ -1,5 +1,5 @@
-import tile_utils
-import model_utils
+import api.controller.tile_utils as tile_utils
+import api.model.model_utils as model_utils
 import pipeline
 
 '''

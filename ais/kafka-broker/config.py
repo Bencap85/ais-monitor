@@ -1,0 +1,1 @@
+SERVER_CONFIG = {'bootstrap.servers': 'localhost:9092'}

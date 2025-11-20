@@ -1,0 +1,42 @@
+Goal:
+    To gain end-to-end experience in developing object detection and classification models,
+    and improve application results. Start with only object detection model.
+
+Steps:
+
+    [ ] 1. Setup testing/development environment.
+            - Do inside jupypter notebook for simple development.
+            - Define test metrics to compare old Roboflow object detection model with new.
+
+            - Chosen scoring metrics:
+                1. IoU -> Measures how well the bounding boxes fit the actual ships.
+                2. Precision -> How many detections are actually correct. = True positives / (True positives + False positives)
+                3. Recall -> How many actual objects are correctly detected. = True positives / (True positives + False negatives)
+                4. F1 -> Harmonic mean of Precision and Recall.
+
+    [ ] 2. Choose and import base object detection model.
+            - Yolov5, etc. from some python ML library.
+            - Keep the old Roboflow model, will want to test performance later.
+
+    [ ] 3. Build and prepare a dataset for training.
+            - Roboflow apparently has a UI for image preparation/labeling.
+            - Might be able to find a robust dataset online.
+            - Prepare all necessary metadata (config files, etc) needed to train/test.
+            - Try on small dataset first, to make sure process works and we don't run
+            into any suprises like image size is incompatible, etc.
+            - Add in new class "ship" to config file.
+
+    [ ] 4. Train and test model.
+            - Evaluate performance and repeat steps 3 -> 4 as needed.
+            - Test against original Roboflow model.
+
+    [ ] 5. Save/integrate model into pipeline.
+            - Find way to save this model (to a flat file)?
+            - Integrate with application.
+
+
+Potential concerns:
+
+    - Image size issues. Have a feeling we may run into errors if the model is trained on
+    differently sized images than the images fed to it. Need to research this before training.
+

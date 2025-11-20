@@ -4,9 +4,8 @@ import os
 import json
 import requests
 from flask_cors import CORS
-import model_utils
-import pipeline
-import pipeline_store
+from model import model_utils
+from pipeline import pipeline, pipeline_store
 
 app = Flask(__name__)
 CORS(app)
@@ -28,7 +27,6 @@ def detect_tiles():
     zoom_levels = data.get("zoomLevels")
     pipeline_id = pipeline_store.create_new_pipeline_id()
 
-    # pipeline.run_pipeline(geojson_bounds, pipeline_id)
     # Run pipeline in a background thread
     thread = threading.Thread(target=pipeline.run_pipeline, args=(geojson_bounds, pipeline_id, zoom_levels))
     thread.start()
@@ -42,18 +40,6 @@ def detect_tiles():
     return make_response(jsonify(response), 202)
     
 
-'''
-If pipeline status found, returns:
-    STATUS: 200, {
-        stage: str,
-        progress: float
-    }
-
-else, returns:
-    STATUS: 404, {
-        error: str
-    }
-'''
 @app.route('/api/<pipeline_id>/status', methods=['GET'])
 def get_pipeline_status(pipeline_id: str):
     status = pipeline_store.get_pipeline_status(pipeline_id)
@@ -66,17 +52,7 @@ def get_pipeline_status(pipeline_id: str):
     }
 
     return make_response(jsonify(response), 200)
-    # Return label and progress, e.g. "Fetching data", 0.78/1.
-    # {
-    #   stage: "Fetching tiles",
-    #   progress: 0.78
-    # }
 
-    # Stages:
-    # 1. FETCHING
-    # 2. DETECTING
-    # 3. CLASSIFYING
-    # 4. COMPLETED
 
 @app.route('/api/<pipeline_id>/result', methods=['GET'])
 def get_pipeline_result(pipeline_id):
@@ -90,4 +66,4 @@ def get_pipeline_result(pipeline_id):
 
 if __name__ == '__main__':
     model_utils.load_models()
-    app.run(port=8080)
+    app.run(host='0.0.0.0', port=8080)

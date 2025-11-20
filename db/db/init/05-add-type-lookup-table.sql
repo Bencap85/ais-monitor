@@ -1,0 +1,36 @@
+CREATE TABLE ship_type(
+    type_code INT PRIMARY KEY,
+    type_name VARCHAR(100) NOT NULL
+);
+
+INSERT INTO ship_type (type_code, type_name) VALUES
+(0, 'Not available'),
+(20, 'Wing in ground (WIG)'),
+(30, 'Fishing'),
+(31, 'Towing'),
+(32, 'Towing: length >200m or breadth >25m'),
+(33, 'Dredging or underwater ops'),
+(34, 'Diving ops'),
+(35, 'Military ops'),
+(36, 'Sailing'),
+(37, 'Pleasure craft'),
+(40, 'High speed craft (HSC)'),
+(50, 'Pilot vessel'),
+(51, 'Search and rescue vessel'),
+(52, 'Tug'),
+(53, 'Port tender'),
+(54, 'Anti-pollution equipment'),
+(55, 'Law enforcement vessel'),
+(60, 'Passenger ship'),
+(70, 'Cargo ship'),
+(80, 'Tanker'),
+(90, 'Other types of ship'),
+(91, 'Medical transport'),
+(92, 'Ship carrying dangerous goods'),
+(93, 'Ship carrying harmful substances'),
+(94, 'Ship carrying IMO hazard category A'),
+(95, 'Ship carrying IMO hazard category B'),
+(96, 'Ship carrying IMO hazard category C'),
+(97, 'Ship carrying IMO hazard category D'),
+(98, 'Ship carrying hazardous cargo, type unknown'),
+(99, 'Other special category ship');

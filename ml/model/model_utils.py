@@ -1,13 +1,11 @@
-
-
 from ultralytics import YOLO
 from inference import get_model
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from coordinate_utils import tile_pixel_to_latlng
-import tile_utils
-from ship import Ship
+import tile_utils as tile_utils
+from domain.ship import Ship
 
 detection_model = None
 classification_model = None
@@ -157,4 +155,17 @@ def non_max_suppression(ships, iou_threshold=0.5):
                 suppressed[j] = True
 
     return keep
+
+def filter_unwanted_classes(ships: list[Ship]) -> list[Ship]:
+    """
+    Filters out unwanted ships by their classification
+    """
+
+    unwanted = [ 'Dock', 'Landing']
+    filtered_ships = []
+    for ship in ships:
+        if ship.type not in unwanted:
+            filtered_ships.append(ship)
+
+    return filtered_ships
 

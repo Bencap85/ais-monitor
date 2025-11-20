@@ -2,11 +2,11 @@
 
 import cv2
 import tile_utils
-import model_utils
+from model import model_utils
 import coordinate_utils
 import numpy as np
-from ship import Ship
-import pipeline_store
+from domain.ship import Ship
+from .import pipeline_store
 
 
 
@@ -127,6 +127,7 @@ def run_pipeline(geojson_bounds, pipeline_id, zoom_levels=[15]):
         all_ships.extend(ships)
 
     filtered_ships = model_utils.non_max_suppression(all_ships, 0.2)
+    filtered_ships = model_utils.filter_unwanted_classes(filtered_ships)
 
     # Return results -> convert go GeoJSON
     features = []

@@ -7,8 +7,7 @@ import geopandas as gpd
 from PIL import Image
 from io import BytesIO
 from shapely.geometry import box
-import coordinate_utils
-
+import coordinate_utils as coordinate_utils
 
 
 def compress_to_webp(image: Image) -> None:
@@ -130,6 +129,15 @@ def get_cropped_tile_from_global_bbox(global_bbox: list, zoom_level: int) -> np.
 #    1. Determine the tile/s we need (the tiles that this bounding box intersects)
 #       - Maybe splice these into 1 image for simplicity
 #
-#   2. Translate the global coordinates into pixel coordinates of this combined image
+#    2. Translate the global coordinates into pixel coordinates of this combined image
 #
-#   3. Crop the image at those pixel coordinates and return
+#    3. Crop the image at those pixel coordinates and return
+#
+#    This will then allow us to do a number of things, including:
+#       - Display object detections for debugging.
+#       - Make code more consistent.
+#       - Traverse across tile edges for ships spanning the border
+#           - Should maybe convert to a sliding window approach to make this happen.
+#             Will need to think this over
+#
+#
