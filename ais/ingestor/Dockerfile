@@ -12,4 +12,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install ping utility
 RUN apt update && apt install -y iputils-ping
 
-CMD ["python", "-u", "ingestor.py"]
+CMD ["python", "-u", "main.py"]

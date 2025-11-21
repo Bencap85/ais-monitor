@@ -4,29 +4,26 @@ from datetime import datetime, timezone
 import time
 import random
 import os
+import logging
 from kafka import KafkaProducer
-from websocket import create_connection
+from websocket import create_connection, Websocket
 from websocket._exceptions import WebSocketConnectionClosedException
+import sys
 
+logging.basicConfig(
+    level=logging.INFO, 
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    stream=sys.stdout     
+)
+
+logger = logging.getLogger(__name__)
 API_KEY = "90ebcd12a02888b382cf2c013bfd3336b2b82108"
 
-def convert_metadata_string_to_datetime(raw_time: str) -> datetime:
-    cleaned = raw_time.replace(" UTC", "")
-    parts = cleaned.split(".")
-    if len(parts) == 2:
-        timestamp = parts[0] + "." + parts[1][:6]
-    else:
-        timestamp = cleaned
+ACCEPTED_MESSAGE_TYPES = { "PositionReport", "ShipStaticData" }
 
-    msg_time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
-    return msg_time.replace(tzinfo=timezone.utc)
+class AisIngestor:
 
-def queue_message(producer, ais_message):
-    producer.send("ais_message", value=ais_message)
-
-def connect_ais_stream(producer: KafkaProducer):
-
-    def connect():
+    def _connect_to_ws(self) -> Websocket:
         ws = create_connection("wss://stream.aisstream.io/v0/stream")
         subscribe_message = {
             "APIKey": API_KEY,
@@ -36,75 +33,92 @@ def connect_ais_stream(producer: KafkaProducer):
         ws.send(json.dumps(subscribe_message))
         return ws
     
-    ws = connect()
+    def __init__(self, kafka_producer: KafkaProducer):
+        self.ws_connection = self._connect_to_ws()
+        self.kafka_producer = kafka_producer
+        
+        self.stats = {
+            "message_count": 0,
+            "lag_seconds": 0,
+            "messages_per_second": 0,
+            "start_time": None
+        }
 
-    message_count = 0
-    start_time = datetime.now(timezone.utc)
+    def _queue_message(self, ais_message: dict) -> None:
+        self.kafka_producer.send("ais_message", value=ais_message)
 
-    try:
-        while True:
-            
-            try:
-                message_json = ws.recv()
-                message = json.loads(message_json)
-                message_type = message.get("MessageType")
+    def _handle_message(self, message: dict) -> None:
+        if message is None:
+            logger.info("Received empty message")
+            return
+        
+        message_type = message.get("MessageType")
+        if message_type in ACCEPTED_MESSAGE_TYPES:
+            ais_message = message["Message"][message_type]
+            self._queue_message(ais_message)
 
-                if message_type == "PositionReport" or message_type == "ShipStaticData":
-                    ais_message = message["Message"][message_type]
-                    queue_message(producer, ais_message)
+    def _convert_metadata_string_to_datetime(self, raw_time: str) -> datetime:
+        cleaned = raw_time.replace(" UTC", "")
+        parts = cleaned.split(".")
+        if len(parts) == 2:
+            timestamp = parts[0] + "." + parts[1][:6]
+        else:
+            timestamp = cleaned
 
-                    message_count += 1
-                    if message_count % 1000 == 0:
-                        print(f"{message_count}th message sent ****************************")
-                        sent_time = convert_metadata_string_to_datetime(message["MetaData"]["time_utc"])
+        msg_time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
+        return msg_time.replace(tzinfo=timezone.utc)
+
+
+    def run(self) -> None:
+        self.stats["start_time"] = datetime.now(timezone.utc)
+        try:
+            while True:
+                try:
+                    message_json = self.ws_connection.recv()
+                    message = json.loads(message_json)
+                    self._handle_message(message)
+
+                    self.stats["message_count"] += 1
+                    if self.stats["message_count"] % 1000 == 0:
+
+                        # Calculate lag
+                        sent_time = self._convert_metadata_string_to_datetime(message["MetaData"]["time_utc"])
                         lag = datetime.now(timezone.utc) - sent_time
-                        print(f"Lag: {lag.total_seconds():.2f} seconds")
 
                         # Calculate messages/second
-                        elapsed_time = datetime.now(timezone.utc) - start_time
+                        elapsed_time = datetime.now(timezone.utc) - self.stats["start_time"]
                         elapsed_seconds = elapsed_time.total_seconds()
-                        messages_per_second = message_count / elapsed_seconds
-                        print(f"Recieving {messages_per_second} messages per second")
+                        messages_per_second = self.stats["message_count"] / elapsed_seconds
+                        
+                        self.stats["lag_seconds"] = lag.total_seconds()
+                        self.stats["messages_per_second"] = messages_per_second
 
-            except WebSocketConnectionClosedException as we:
-                print("WebSocket connection lost. Reconnecting in 5 seconds...")
-                print(f"Exception: {we}")
-                ws.close()
-                time.sleep(1)
-                ws = connect()
-                if ws is not None:
-                    print(f"Reconnected successfully: {str(ws)}")
-            except Exception as e:
-                print(f"Unexpected error: {e}. Reconnecting in 5 seconds...")
-                ws.close()
-                time.sleep(1)
-                ws = connect()
-                if ws is not None:
-                    print(f"Reconnected successfully: {str(ws)}")
+                        logger.info(str(self.stats))
 
-    except KeyboardInterrupt:
-        print("Stream stopped.")
-    finally:
-        ws.close()
+                except KeyboardInterrupt as k:
+                    print("Exiting...")
+                    logger.info("Exiting...")
 
-def main():
-    while True:
-        try:
-            kafka_address = os.getenv("KAFKA_ADDRESS", "localhost:9092")
-            
-            print("Consumer is attempting to connect to Kafka broker...")
-            producer = KafkaProducer(
-                bootstrap_servers=kafka_address,
-                value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-                request_timeout_ms=5000,
-                retries=0
-            )
-            print("Connected to kafka. Connecting via websocket now...")
-            break
-        except:
-            print("Failed to connect to Kafka. Retrying in ")
+                except WebSocketConnectionClosedException as we:
+                    logger.info("WebSocket connection lost.")
+                    logger.error(f"Exception: {we}")
+                    logger.info("Reconnecting in 2 seconds...")
+                    self.ws_connection.close()
+                    time.sleep(2)
+                    self.ws_connection = self._connect_to_ws()
+                    if self.ws_connection is not None:
+                        logger.info(f"Reconnected successfully: {str(self.ws_connection)}")
 
-    connect_ais_stream(producer)
+                except Exception as e:
+                    logger.error(f"Unexpected error: {e}.") 
+                    logger.info("Reconnecting in 2 seconds...")
+                    self.ws_connection.close()
+                    time.sleep(2)
+                    self.ws_connection = self._connect_to_ws()
+                    if self.ws_connection is not None:
+                        logger.info(f"Reconnected successfully: {str(self.ws_connection)}")
 
-if __name__ == "__main__":
-    main()
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}. Reconnecting in 5 seconds...")
+            self.ws_connection.close()
+                
