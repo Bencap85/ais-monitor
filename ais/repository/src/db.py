@@ -1,34 +1,15 @@
-import os
 import json
-import time
-from datetime import datetime, timezone
-from kafka import KafkaConsumer
-import uuid
+import logging
 import psycopg2
-from psycopg2 import OperationalError
+import psycopg2.extras
 from psycopg2.extras import execute_values
-import connect_as_kafka_consumer
-import threading
+import psycopg2.extensions
+from psycopg2.extensions import connection
+from typing import Iterable, Dict, Any, List
 
+logger = logging.getLogger(__name__)
 
-def schedule_prune(conn, interval=600, max_records=10):
-    def job():
-        try:
-            with conn.cursor() as cur:
-                cur.execute("CALL prune_ais_ships_history(%s);", (max_records,))
-                conn.commit()
-                print(f"Pruned ais_ships_history to keep {max_records} records per ship")
-        except Exception as e:
-            print(f"Prune failed: {e}")
-        finally:
-            # reschedule itself
-            threading.Timer(interval, job).start()
-
-    # kick off the first run
-    threading.Timer(interval, job).start()
-
-
-def connect_to_database():
+def connect_to_database() -> connection:
     print("Attempting to connect to database...")
     try:
         connection = psycopg2.connect(
@@ -45,7 +26,7 @@ def connect_to_database():
         return None
     
 
-def batch_upsert_ships(conn, ship_batch):
+def batch_upsert_ships(conn: connection, ship_batch: List) -> None:
     with conn.cursor() as cur:
         query = """
         INSERT INTO ais_ships (mmsi, sog_knots, navigational_status, true_heading, position)
@@ -72,7 +53,7 @@ def batch_upsert_ships(conn, ship_batch):
         conn.commit()
         print(f"Successfully inserted/updated {len(ship_batch)} records into database")
 
-def batch_update_history(conn, ship_batch):
+def batch_update_history(conn: connection, ship_batch: List) -> None:
     with conn.cursor() as cur:
         query = """
         INSERT INTO ais_ships_history (mmsi, sog_knots, navigational_status, true_heading, position)
@@ -94,16 +75,7 @@ def batch_update_history(conn, ship_batch):
         print(f"Successfully inserted/updated {len(ship_batch)} HISTORY records into database")
 
 
-def prune_history(conn, max_records=10):
-    with conn.cursor() as cur:
-        # Call the stored procedure
-        
-        start = time.time()
-        cur.execute("CALL prune_ais_ships_history(%s);", (max_records,))
-        conn.commit()
-        print(f"Pruned ais_ships_history to keep {max_records} records per ship in {time.time() - start:.2f} seconds")
-
-def batch_upsert_static_data(conn, static_batch):
+def batch_upsert_static_data(conn: connection, static_batch: List) -> None:
     with conn.cursor() as cur:
         query = """
         INSERT INTO ship_static_data (
@@ -168,50 +140,3 @@ def batch_upsert_static_data(conn, static_batch):
         execute_values(cur, query, values)
         conn.commit()
         print(f"Successfully inserted/updated {len(static_batch)} static ship records")
-
-def main():
-
-    consumer = connect_as_kafka_consumer.connect(os.getenv("KAFKA_ADDRESS", "localhost:9092"), 2)
-
-    connection = connect_to_database()
-    if connection is None:
-        return
-    
-    schedule_prune(connection, interval=600, max_records=int(os.getenv("MAX_HISTORY_RECORDS_PER_SHIP"), 10))
-
-    message_count = 0
-    batch_ships = {}
-    batch_history = []
-    batch_static = {}
-
-    POSITION_REPORT_IDS = [ 1, 2, 3 ] 
-    STATIC_DATA_IDS = [ 5 ]
-
-    try:
-        for message in consumer:
-            # print(f"Recieved message @{datetime.now(timezone.utc)}")
-            ship_data = message.value
-
-            # Add data to bath as determined by message type
-            if ship_data['MessageID'] in STATIC_DATA_IDS:
-                batch_static[ship_data['UserID']] = ship_data
-
-            elif ship_data['MessageID'] in POSITION_REPORT_IDS:
-                batch_ships[ship_data['UserID']] = ship_data
-                batch_history.append(ship_data)
-
-            message_count += 1
-            if message_count % 2000 == 0:
-                print(f"{message_count}th message received ************************")
-                batch_upsert_ships(connection, batch_ships.values())
-                batch_update_history(connection, batch_history)
-                batch_upsert_static_data(connection, batch_static.values())
-
-                batch_ships = {}
-                batch_history = []
-                batch_static = {}
-
-    except KeyboardInterrupt:
-        print("\nConsumer stopped.")
-
-main()
