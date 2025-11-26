@@ -1,5 +1,7 @@
 import json
 import logging
+import datetime
+from datetime import datetime, timezone
 import psycopg2
 import psycopg2.extras
 from psycopg2.extras import execute_values
@@ -140,3 +142,45 @@ def batch_upsert_static_data(conn: connection, static_batch: List) -> None:
         execute_values(cur, query, values)
         conn.commit()
         print(f"Successfully inserted/updated {len(static_batch)} static ship records")
+
+def find_ships_within_bounds(cursor: any, geometry: dict) -> list:
+    try:
+        query = """
+            SELECT
+                ais_ships.id,
+                ais_ships.mmsi AS "UserID",
+                ais_ships.navigational_status AS "NavigationalStatus",
+                ST_Y(position::geometry) AS "Latitude",
+                ST_X(position::geometry) AS "Longitude",
+                ais_ships.sog_knots AS "Sog",
+                ais_ships.timestamp AS "Timestamp",
+                ais_ships.true_heading AS "TrueHeading",
+                ship_static_data.name AS "Name",
+                ship_static_data.call_sign AS "CallSign",
+                ship_type.type_name AS "ShipTypeName"
+            FROM ais_ships 
+            LEFT JOIN ship_static_data
+                ON ais_ships.mmsi = ship_static_data.mmsi
+            LEFT JOIN ship_type
+                ON ship_static_data.ship_type = ship_type.type_code
+            WHERE ais_ships.position && ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)
+            AND ST_Intersects(
+            ais_ships.position::geometry,
+            ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)
+            )
+            AND ais_ships.timestamp > NOW() - INTERVAL '24 hours';
+        """
+        print("Executing spatial query with geometry:", json.dumps(geometry))
+        start_time = datetime.now(timezone.utc)
+     
+        cursor.execute(query, (json.dumps(geometry), json.dumps(geometry),))
+
+        elapsed_time = datetime.now(timezone.utc) - start_time
+        elapsed_seconds = elapsed_time.total_seconds()  
+        logger.info(f"Query took {elapsed_seconds} seconds") 
+                        
+        results = cursor.fetchall()
+        return results
+    
+    except Exception as e:
+        raise Exception(e)

@@ -6,7 +6,7 @@ import random
 import os
 import logging
 from kafka import KafkaProducer
-from websocket import create_connection, Websocket
+from websocket import create_connection
 from websocket._exceptions import WebSocketConnectionClosedException
 import sys
 
@@ -23,7 +23,7 @@ ACCEPTED_MESSAGE_TYPES = { "PositionReport", "ShipStaticData" }
 
 class AisIngestor:
 
-    def _connect_to_ws(self) -> Websocket:
+    def _connect_to_ws(self):
         ws = create_connection("wss://stream.aisstream.io/v0/stream")
         subscribe_message = {
             "APIKey": API_KEY,

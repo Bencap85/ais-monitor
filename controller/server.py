@@ -124,7 +124,8 @@ def get_ships_within_bounds():
     """
     try:
         target_url = f"{os.getenv('REPOSITORY_SERVICE_URL')}/api/ships-within-bounds"
-        response = requests.post(target_url, json=request.get_json())
+        headers = dict(request.headers)
+        response = requests.post(target_url, headers=headers, json=request.get_json())
         return jsonify(response.json()), response.status_code
 
     except requests.exceptions.RequestException as e:
