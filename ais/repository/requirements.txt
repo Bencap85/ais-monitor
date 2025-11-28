@@ -4,6 +4,7 @@ psycopg2-binary
 flask
 Flask-Cors
 requests
+APScheduler
 
 python-dotenv==1.0.1   # for loading .env files
 dataclasses; python_version < "3.7"  # only needed if you run <3.7
