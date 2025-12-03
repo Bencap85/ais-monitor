@@ -4,3 +4,4 @@ python-socketio
 eventlet
 kafka-python
 shapely
+pydantic-settings

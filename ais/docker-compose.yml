@@ -41,8 +41,6 @@ services:
       context: ./repository
       dockerfile: Dockerfile
     container_name: ais_repository
-    environment:
-      - KAFKA_ADDRESS=kafka:9092
     restart: unless-stopped
     depends_on:
       - ais-ws-broadcaster

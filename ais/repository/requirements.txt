@@ -5,6 +5,7 @@ flask
 Flask-Cors
 requests
 APScheduler
+pydantic-settings
 
 python-dotenv==1.0.1   # for loading .env files
 dataclasses; python_version < "3.7"  # only needed if you run <3.7

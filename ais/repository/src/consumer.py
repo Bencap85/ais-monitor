@@ -20,7 +20,7 @@ STATIC_DATA_IDS = {5}
 class AisConsumer():
     def __init__(self, conn: connection):
         self.conn = conn
-        self.consumer = connect_as_kafka_consumer.connect(os.getenv("KAFKA_ADDRESS", "localhost:9092"), 2)
+        self.consumer = connect_as_kafka_consumer.connect()
 
         self.batch_ships = {}
         self.batch_history = []
@@ -61,7 +61,6 @@ class AisConsumer():
             logger.info(f"{self.message_count}th message received ************************")
             self._flush_ships()
         
-
 
     def run(self) -> None:
         try:

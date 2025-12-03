@@ -5,10 +5,12 @@ import time
 import random
 import os
 import logging
+import sys
 from kafka import KafkaProducer
 from websocket import create_connection
 from websocket._exceptions import WebSocketConnectionClosedException
-import sys
+from settings import Settings
+
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -17,18 +19,18 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-API_KEY = "90ebcd12a02888b382cf2c013bfd3336b2b82108"
+settings = Settings()
 
 ACCEPTED_MESSAGE_TYPES = { "PositionReport", "ShipStaticData" }
 
 class AisIngestor:
 
     def _connect_to_ws(self):
-        ws = create_connection("wss://stream.aisstream.io/v0/stream")
+        ws = create_connection(settings.ws_api_url)
         subscribe_message = {
-            "APIKey": API_KEY,
+            "APIKey": settings.ws_api_key,
             "BoundingBoxes": [[[-90, -180], [90, 180]]],
-            "FilterMessageTypes": ["PositionReport", "ShipStaticData"]
+            "FilterMessageTypes": list(ACCEPTED_MESSAGE_TYPES)
         }
         ws.send(json.dumps(subscribe_message))
         return ws
@@ -45,7 +47,7 @@ class AisIngestor:
         }
 
     def _queue_message(self, ais_message: dict) -> None:
-        self.kafka_producer.send("ais_message", value=ais_message)
+        self.kafka_producer.send(settings.kafka_topic, value=ais_message)
 
     def _handle_message(self, message: dict) -> None:
         if message is None:
@@ -102,23 +104,23 @@ class AisIngestor:
                 except WebSocketConnectionClosedException as we:
                     logger.info("WebSocket connection lost.")
                     logger.error(f"Exception: {we}")
-                    logger.info("Reconnecting in 2 seconds...")
+                    logger.info(f"Reconnecting in {settings.ws_retry_seconds} seconds...")
                     self.ws_connection.close()
-                    time.sleep(2)
+                    time.sleep(settings.ws_retry_seconds)
                     self.ws_connection = self._connect_to_ws()
                     if self.ws_connection is not None:
                         logger.info(f"Reconnected successfully: {str(self.ws_connection)}")
 
                 except Exception as e:
                     logger.error(f"Unexpected error: {e}.") 
-                    logger.info("Reconnecting in 2 seconds...")
+                    logger.info(f"Reconnecting in {settings.ws_retry_seconds} seconds...")
                     self.ws_connection.close()
-                    time.sleep(2)
+                    time.sleep(settings.ws_retry_seconds)
                     self.ws_connection = self._connect_to_ws()
                     if self.ws_connection is not None:
                         logger.info(f"Reconnected successfully: {str(self.ws_connection)}")
 
         except Exception as e:
-            logger.error(f"Unexpected error: {e}. Reconnecting in 5 seconds...")
+            logger.error(f"Unexpected error: {e}")
             self.ws_connection.close()
                 

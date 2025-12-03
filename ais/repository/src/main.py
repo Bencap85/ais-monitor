@@ -5,8 +5,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from server import create_api
 from consumer import AisConsumer
 from db import connect_to_database
+from settings import Settings
+
 
 logger = logging.getLogger(__name__)
+settings = Settings()
 
 def start_consumer() -> None:
     connection = connect_to_database()
@@ -30,7 +33,7 @@ def start_history_pruner() -> None:
         cursor = connection.cursor()
         try:
             logger.info("Prune job initiated")
-            cursor.execute(f"CALL {PRUNE_QUERY_NAME}(%s)", (MAX_HISTORY_RECORDS,))
+            cursor.execute(f"CALL {PRUNE_QUERY_NAME}(%s)", (settings.max_history_per_mmsi))
             connection.commit()
             logger.info("Prune job completed")
         except Exception as e:
@@ -42,7 +45,7 @@ def start_history_pruner() -> None:
             connection.close()
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(prune_job, "interval", minutes=2)
+    scheduler.add_job(prune_job, "interval", minutes=settings.db_history_prune_query_interval)
     scheduler.start()
 
     logger.info("History pruner scheduler started")

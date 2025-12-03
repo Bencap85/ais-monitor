@@ -5,28 +5,36 @@ import time
 import random
 import os
 import threading
+import logging
 from kafka import KafkaProducer
 from ingestor import AisIngestor
+from settings import Settings
 
+
+logger = logging.getLogger(__name__)
+settings = Settings()
+
+logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    )
 
 def start_ingestor():
     producer = None
 
     while True:
-        try:
-            kafka_address = os.getenv("KAFKA_ADDRESS", "localhost:9092")
-            
-            print("Consumer is attempting to connect to Kafka broker...")
+        try:            
+            logger.info("Consumer is attempting to connect to Kafka broker...")
             producer = KafkaProducer(
-                bootstrap_servers=kafka_address,
+                bootstrap_servers=settings.kafka_address,
                 value_serializer=lambda v: json.dumps(v).encode("utf-8"),
                 request_timeout_ms=5000,
                 retries=0
             )
-            print("Connected to kafka. Connecting via websocket now...")
+            logger.info("Connected to kafka. Connecting via websocket now...")
             break
         except:
-            print("Failed to connect to Kafka. Retrying in ")
+            logger.info("Failed to connect to Kafka. Retrying in 5s")
 
     if producer is None:
         return

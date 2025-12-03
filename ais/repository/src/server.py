@@ -7,8 +7,12 @@ import os
 import json
 import requests
 from flask_cors import CORS
-from db import connect_to_database, find_ships_within_bounds
+from db import connect_to_database, find_ships_within_bounds, history_for_mmsi
 from query_manager import QueryManager
+from settings import Settings
+
+
+settings = Settings()
     
 def create_api() -> Flask:
 
@@ -16,9 +20,9 @@ def create_api() -> Flask:
     CORS(app)
 
     pg_pool = pool.SimpleConnectionPool(
-        minconn=1,
-        maxconn=20,
-        dsn="dbname=ais_data user=postgres password=postgres host=host.docker.internal"
+        minconn=settings.pg_minconn,
+        maxconn=settings.pg_maxconn,
+        dsn=f"dbname={settings.db_name} user={settings.db_user} password={settings.db_password} host={settings.db_host}"
     )
 
     query_manager = QueryManager(pg_pool)
@@ -48,23 +52,7 @@ def create_api() -> Flask:
     def get_history(mmsi: int):
         try:
             connection = pg_pool.getconn()
-            cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            query = """
-                SELECT
-                    id,
-                    mmsi AS "UserID",
-                    navigational_status AS "NavigationalStatus",
-                    ST_Y(position::geometry) AS "Latitude",
-                    ST_X(position::geometry) AS "Longitude",
-                    sog_knots AS "Sog",
-                    timestamp AS "Timestamp",
-                    true_heading AS "TrueHeading"
-                FROM ais_ships_history
-                WHERE mmsi = %s
-                ORDER BY timestamp DESC;
-            """
-            cursor.execute(query, (mmsi,))
-            results = cursor.fetchall()
+            results = history_for_mmsi(mmsi, connection)
             return jsonify(results), 200
 
         except Exception as e:

@@ -8,23 +8,25 @@ from psycopg2.extras import execute_values
 import psycopg2.extensions
 from psycopg2.extensions import connection
 from typing import Iterable, Dict, Any, List
+from settings import Settings
 
 logger = logging.getLogger(__name__)
+settings = Settings()
 
 def connect_to_database() -> connection:
-    print("Attempting to connect to database...")
+    logger.info("Attempting to connect to database...")
     try:
         connection = psycopg2.connect(
-            dbname="ais_data",
-            user="postgres",
-            password="postgres",
-            host="host.docker.internal",
-            port="5432"     
+            dbname=settings.db_name,
+            user=settings.db_user,
+            password=settings.db_password,
+            host=settings.db_host,
+            port=settings.db_port     
         )
-        print("Connected to database")
+        logger.info("Connected to database")
         return connection
     except OperationalError as e:
-        print(f"Database connection failed: {e}")
+        logger.error(f"Database connection failed: {e}")
         return None
     
 
@@ -96,7 +98,8 @@ def batch_upsert_static_data(conn: connection, static_batch: List) -> None:
             max_static_draught,
             destination,
             dte,
-            spare
+            spare,
+            ship_length
         )
         VALUES %s
         ON CONFLICT (mmsi) DO UPDATE SET
@@ -114,7 +117,8 @@ def batch_upsert_static_data(conn: connection, static_batch: List) -> None:
             max_static_draught = EXCLUDED.max_static_draught,
             destination = EXCLUDED.destination,
             dte = EXCLUDED.dte,
-            spare = EXCLUDED.spare;
+            spare = EXCLUDED.spare,
+            ship_length = EXCLUDED.ship_length;
         """
 
         values = [
@@ -127,14 +131,15 @@ def batch_upsert_static_data(conn: connection, static_batch: List) -> None:
                 static_record["ImoNumber"],
                 static_record["CallSign"],
                 static_record["Name"],
-                static_record["Type"],
+                validate_ship_type(static_record["Type"]),
                 json.dumps(static_record.get('Dimension', {})),
                 static_record["FixType"],
                 json.dumps(static_record.get('Eta', {})),
                 static_record["MaximumStaticDraught"],
                 static_record["Destination"],
                 static_record["Dte"],
-                static_record["Spare"]
+                static_record["Spare"],
+                determine_ship_length(static_record.get('Dimension', {}))
             )
             for static_record in static_batch
         ]
@@ -157,7 +162,8 @@ def find_ships_within_bounds(cursor: any, geometry: dict) -> list:
                 ais_ships.true_heading AS "TrueHeading",
                 ship_static_data.name AS "Name",
                 ship_static_data.call_sign AS "CallSign",
-                ship_type.type_name AS "ShipTypeName"
+                ship_type.type_name AS "ShipTypeName",
+                ship_static_data.ship_length AS "ShipLength"
             FROM ais_ships 
             LEFT JOIN ship_static_data
                 ON ais_ships.mmsi = ship_static_data.mmsi
@@ -184,3 +190,33 @@ def find_ships_within_bounds(cursor: any, geometry: dict) -> list:
     
     except Exception as e:
         raise Exception(e)
+    
+def history_for_mmsi(mmsi: int, connection: connection) -> List:
+    cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    query = """
+        SELECT
+            id,
+            mmsi AS "UserID",
+            navigational_status AS "NavigationalStatus",
+            ST_Y(position::geometry) AS "Latitude",
+            ST_X(position::geometry) AS "Longitude",
+            sog_knots AS "Sog",
+            timestamp AS "Timestamp",
+            true_heading AS "TrueHeading"
+        FROM ais_ships_history
+        WHERE mmsi = %s
+        ORDER BY timestamp DESC;
+    """
+    cursor.execute(query, (mmsi,))
+    results = cursor.fetchall()
+    return results
+    
+def validate_ship_type(ship_type: int) -> int:
+    if ship_type is not None and -1 < ship_type < 100:
+        return ship_type
+    return 0
+
+def determine_ship_length(dimensions: dict) -> int:
+    if dimensions is not None and "A" in dimensions and "B" in dimensions:
+        return dimensions["A"] + dimensions["B"]
+    return 0

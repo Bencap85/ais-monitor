@@ -8,7 +8,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
- 
 
 @app.route('/api/detect', methods=['POST'])
 def detect_tiles():
@@ -117,9 +116,7 @@ def get_ships_within_bounds():
         }
 
     Returns:
-        List of ships:
-            []
-
+        List of ships
 
     """
     try:
@@ -142,8 +139,6 @@ def get_history(mmsi: int):
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"Failed to connect to {target_url}", "details": str(e)}), 502
     
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

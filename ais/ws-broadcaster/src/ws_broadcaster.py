@@ -1,13 +1,23 @@
 
 import os
 import math
+import logging
 import eventlet
 eventlet.monkey_patch()
-
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, join_room, leave_room
 import connect_as_kafka_consumer
+from settings import Settings
 from tile_utils import get_intersecting_tiles
+
+
+logger = logging.getLogger(__name__)
+settings = Settings()
+
+logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    )
 
 # Flask + SocketIO setup
 app = Flask(__name__)
@@ -34,8 +44,7 @@ def get_tile_id(lat, lon, zoom=6):
     return f"{zoom}_{x_tile}_{y_tile}"
 
 def start_consumer():
-    kafka_address = os.getenv("KAFKA_ADDRESS", "localhost:9092")
-    consumer = connect_as_kafka_consumer.connect(kafka_address, 2)
+    consumer = connect_as_kafka_consumer.connect()
 
     message_count = 0
     for message in consumer:
@@ -54,7 +63,7 @@ def start_consumer():
         socketio.emit('ais_update', ship_data, room=tile_id)
 
         if message_count % 1000 == 0:
-            print(f"{message_count}th message received ************************")
+            logger.info(f"{message_count}th message received ************************")
 
 
 @app.route('/api/relevant-rooms', methods=['POST'])
