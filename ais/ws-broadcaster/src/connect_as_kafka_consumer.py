@@ -9,11 +9,6 @@ from settings import Settings
 logger = logging.getLogger(__name__)
 settings = Settings()
 
-logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
-    )
-
 def connect():
     while True:
         try:

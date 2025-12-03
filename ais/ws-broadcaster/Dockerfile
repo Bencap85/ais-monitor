@@ -10,4 +10,4 @@ COPY src .
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "-u", "ws_broadcaster.py"]
+CMD ["python", "-u", "main.py"]
