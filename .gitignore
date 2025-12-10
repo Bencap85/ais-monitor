@@ -9,6 +9,8 @@ __pycache__/
 
 /build
 
+*.gitignore
+
 .DS_Store
 .env.local
 .env.development.local
