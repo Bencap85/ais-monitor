@@ -30,8 +30,6 @@ services:
       context: ./ais/ws-broadcaster
       dockerfile: Dockerfile
     container_name: ais_ws_broadcaster
-    environment:
-      - KAFKA_ADDRESS=kafka:9092
     ports:
       - "5000:5000"
     restart: unless-stopped
@@ -43,9 +41,6 @@ services:
       context: ./ais/repository
       dockerfile: Dockerfile
     container_name: ais_repository
-    environment:
-      - KAFKA_ADDRESS=kafka:9092
-      - MAX_HISTORY_RECORDS_PER_SHIP=100
     restart: unless-stopped
     depends_on:
       - ais-ws-broadcaster
@@ -55,8 +50,6 @@ services:
       context: ./ais/ingestor
       dockerfile: Dockerfile
     container_name: ais_ingestor
-    environment:
-      - KAFKA_ADDRESS=kafka:9092
     restart: unless-stopped
     depends_on:
       - ais-repository
@@ -65,13 +58,11 @@ services:
     build:
       context: ./controller
       dockerfile: Dockerfile
+    env_file:
+      - ./controller/.env
     container_name: controller
     ports:
       - "8080:8080"
-    environment:
-      - ML_SERVICE_URL=http://ml:8080
-      - REPOSITORY_SERVICE_URL=http://ais-repository:8080
-      - BROADCASTER_SERVICE_URL=http://ais-ws-broadcaster:5000
     restart: unless-stopped
 
   ml:

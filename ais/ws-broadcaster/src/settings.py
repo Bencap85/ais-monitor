@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     db_history_prune_query_interval: int = 5 # Schedule the history prune query to run every x minutes
 
     # Kafka
-    kafka_address: str = "localhost:9092"
+    kafka_address: str = "kafka:9092"
     kafka_topic: str = "ais_message"
     kafka_retry_delay: int = 2
 

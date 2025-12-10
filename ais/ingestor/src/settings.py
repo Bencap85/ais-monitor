@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
 
     # Kafka
-    kafka_address: str = "localhost:9092"
+    kafka_address: str = "kafka:9092"
     kafka_topic: str = "ais_message"
     kafka_retry_delay: int = 2
 
