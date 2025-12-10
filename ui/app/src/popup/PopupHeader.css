@@ -1,0 +1,45 @@
+.popup-header {
+    display: flex;
+    align-content: horizontal;
+    width: 94%;
+    height: 20px;
+    color: var(--text-color-dark);
+    padding-left: 3%;
+    padding-right: 3%;
+    padding-bottom: 1%;
+}
+
+.popup-header div {
+    box-shadow: none;
+}
+
+.popup-title {
+    display: flex;
+    font-size: 12px;
+    padding-left: 0px;
+    justify-content: middle;
+    height: 100%;
+    align-items: last baseline;
+}
+
+.popup-controls {
+    display: flex;
+    margin-right: 0;
+    margin-left: auto;
+
+}
+
+.control {
+    margin-left: 10px;
+    margin-right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    height: 100%;
+    padding: 0;
+
+}
+
+.control:hover {
+    color: var(--text-color-light);
+}

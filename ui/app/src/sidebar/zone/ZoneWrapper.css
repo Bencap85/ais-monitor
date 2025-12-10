@@ -1,0 +1,7 @@
+.zone-wrapper {
+    border-left: 1px/ solid white;
+    /* margin-left: 10px; */
+    box-shadow: none;
+    background-color: var(--ship-background-color);
+}
+

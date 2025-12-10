@@ -1,0 +1,79 @@
+.ais-ships-list-item {
+    box-shadow: 0 0 0 0.5 #fefefe;
+    padding-left: 5%;
+    display: flex;
+    align-content: horizontal;
+    padding-top: 2%;
+    padding-bottom: 2%;
+}
+
+
+.ais-ships-list-item:hover,
+.ais-ships-list-item:hover {
+    background-color: var(--zone-hover-background-color);
+    transition: background-color 0.1s ease;
+}
+
+.selected {
+    background-color: var(--zone-hover-background-color);
+}
+
+.ais-ships-list-item div {
+    box-shadow: none;
+}
+
+.ais-ships-list .data-element {
+    width: 100%;
+    display: flex;
+    align-content: horizontal; 
+    box-shadow: none;
+    border: none;
+    
+    margin-top: 0px;
+}
+
+.ais-ships-list .title {
+    font-size: 16px;
+    color: var(--text-color-light);
+}
+
+.ais-ships-list .label {
+    font-size: 12px;
+    color: var(--text-color-dark);
+}
+
+.ais-ships-list .value {
+    font-size: 12px;
+    color: var(--text-color-light);
+    margin-left: 2%;
+}
+
+.item-left {
+    box-shadow: none;
+    width: 80%;
+}
+
+.item-right {
+    box-shadow: none;
+    margin-right: 5%;
+    margin-left: auto;
+    display: flex;
+}
+
+.ship-status {
+    font-size: 12px;
+    box-shadow: none;
+    border: 1px solid red;
+    color: red;
+    padding: 10%;
+    margin-top: auto;
+    margin-bottom: auto;
+    vertical-align: middle;
+}
+
+.online {
+    padding: 10%;
+    box-shadow: none;
+    border: 1px solid green;
+    color: green;
+}

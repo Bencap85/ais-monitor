@@ -1,0 +1,65 @@
+/* .ais-ships-list {
+    
+} */
+
+.ships-list-wrapper {
+    height: 85.5vh;
+    overflow-y: scroll;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+::-webkit-scrollbar-track {
+  display: none;
+}
+::-webkit-scrollbar-thumb {
+  display: none;
+}
+::-webkit-scrollbar-thumb:hover {
+  display: none;
+}
+
+.total-vessels {
+    box-shadow: none;
+    font-size: 12px;
+    margin-left: 2px;
+}
+
+.ais-ships-list-header {
+    display: flex;
+    align-content: horizontal;
+    box-shadow: none;
+    margin-left: 2px;
+}
+
+.ais-ships-list-header-title {
+    box-shadow: none;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: 12px;
+}
+
+.ais-ships-list-expand-icon-wrapper {
+  height: 16px;
+  width: 16px;
+  background-color: var(--sidebar-background-color);
+  margin-right: 2%;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+.ais-ships-list-expand-icon {
+    height: 100%;
+    width: 100%;
+}
+
+button {
+    background-color: var(--sidebar-background-color);
+ 
+    border: none;
+    box-shadow: none;
+    color: var(--text-color-dark);
+}

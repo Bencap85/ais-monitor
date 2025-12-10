@@ -1,0 +1,103 @@
+.map-view-container {
+    height: 100%;
+    width: 70%;
+    display: block;
+    position: relative;
+}
+#map-container-div {
+    height: 100%; 
+    width: 100%; 
+    display: block; 
+}
+
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+    display: block;
+}
+
+.leaflet-control {
+    /* background-color: var(--sidebar-background-color); */
+    box-shadow: none;
+}
+
+.leaflet-control > a {
+    color: grey;
+}
+
+.leaflet-control > div {
+    box-shadow: none;
+}
+.leaflet-right > div {
+    box-shadow: none;
+}
+.leaflet-right {
+    box-shadow: none;
+}
+
+.ais-map-container .ais-ship-icon, .pulse-wrapper {
+    box-shadow: none;
+}
+
+.history-popup {
+  box-shadow: 0 0 0 0.5px #ccc;
+  background-color: var(--sidebar-background-color);
+  color: var(--text-color-light);
+  border: none;
+}
+
+.history-popup div {
+  box-shadow: none;
+}
+
+.history-popup .key {
+  color: var(--text-color-dark);
+}
+
+.leaflet-container {
+  cursor: default; /* options: pointer, grab, default, etc. */
+}
+
+.leaflet-container div {
+  cursor: default;
+}
+
+.custom-cluster {
+  display: flex;
+  color: var(--text-color-dark);
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(34, 255, 0, 0);
+  border-radius: 100%;
+  border: 1px solid rgb(34, 255, 0);
+}
+
+.custom-cluster:hover {
+  /* border: 2px solid rgb(34, 255, 0); */
+  background-color: rgba(34, 255, 0, 0.257);
+}
+
+.highlight-cluster {
+  display: flex;
+  color: var(--text-color-dark);
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 0, 0, 0.932);
+  border-radius: 100%;
+  border: 1px solid rgb(255, 0, 0);
+}
+
+.highlight-cluster:hover {
+  /* border: 2px solid rgb(34, 255, 0); */
+  background-color: rgba(255, 0, 0, 0.348);
+}
+
+.flash-white {
+  animation: flashWhite 0.2s 3; /* 0.2s per flash, repeat 3 times */
+}
+
+@keyframes flashWhite {
+  0%, 100% { fill: var(--ship-color); }  /* original color */
+  50% { fill: black; }                   /* flash white */
+}
+

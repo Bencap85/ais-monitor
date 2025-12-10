@@ -1,0 +1,26 @@
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    # Database
+    db_max_history_per_mmsi: int = 100 # The max number of history positions to keep for every ship
+    db_history_prune_query_interval: int = 5 # Schedule the history prune query to run every x minutes
+
+    # Kafka
+    kafka_address: str = "kafka:9092"
+    kafka_topic: str = "ais_message"
+    kafka_retry_delay: int = 2
+    
+    # Database
+    db_name: str
+    db_user: str
+    db_password: str
+    db_host: str = "localhost"
+    db_port: int = 5432
+
+    # Connection pool
+    pg_minconn: int = 1
+    pg_maxconn: int = 20
+
+    class Config:
+        env_file = "../.env"
+        env_file_encoding = "utf-8"

@@ -1,0 +1,121 @@
+.ship-popup {
+  position: fixed;
+  z-index: 10000;
+  margin-left: 31vw;
+  margin-top: 1vh;
+  background-color: var(--sidebar-background-color);
+  color: #ffffff;
+  /* padding-bottom: 20px; */
+  width: 300px;
+  box-shadow: none;
+}
+
+.ship-popup-body div {
+  box-shadow: none;
+}
+
+.ship-popup-body {
+  padding: 10px;
+}
+
+.header {
+  display: flex;
+  align-content: horizontal;
+}
+
+.popout-icon-div {
+  display: flex;
+}
+
+.popout-icon {
+  color: var(--text-color-dark);
+  font-weight: lighter;
+  padding: 0;
+  margin-left: 4px;
+  height: 40%;
+  margin-top: auto;
+   margin-bottom: auto;
+  line-height: 50%;   /* centers the glyph vertically */
+  text-align: center;  /* centers horizontally */
+  border: 1px solid var(--text-color-dark);
+}
+
+.popout-icon:hover {
+  color: white;
+  font-weight: lighter;
+  background-color: var(--zone-background-color);
+}
+
+.status-wrapper {
+    box-shadow: none;
+    margin-right: 5%;
+    margin-left: auto;
+    display: flex;
+}
+
+.popup-ship-status {
+    font-size: 12px;
+    box-shadow: none;
+    border: 1px solid red;
+    color: red;
+    padding: 10%;
+    margin-top: auto;
+    margin-bottom: auto;
+    vertical-align: middle;
+}
+
+.online {
+    padding: 10%;
+    box-shadow: none;
+    border: 1px solid green;
+    color: green;
+}
+
+.ship-popup-close-button {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.ship-name {
+  font-size: 20px;
+  margin-bottom: 2px;
+  margin-top: 0px;
+}
+
+.coordinates {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #aaa;
+}
+
+.coordinates li {
+  margin-bottom: 4px;
+}
+
+.ship-popup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ship-popup-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 0px;
+}
+
+.value {
+  font-size: 14px;
+  color: #fff;
+}
+
