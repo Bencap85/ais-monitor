@@ -10,6 +10,7 @@ from flask_cors import CORS
 from db import connect_to_database, find_ships_within_bounds, history_for_mmsi
 from query_manager import QueryManager
 from settings import Settings
+from coordinate_utils.utils import normalize_coordinates
 
 
 settings = Settings()
@@ -38,7 +39,13 @@ def create_api() -> Flask:
         if not geometry:
             return jsonify({"error": "GeoJSON is missing required 'geometry' object"}), 400
 
+        coordinates = geometry.get("coordinates")
+        if not coordinates:
+            return jsonify({"error": "GeoJSON is missing required 'coordinates' object"}), 400
+
         try:
+            normalized_coordinates = normalize_coordinates(coordinates)
+            geometry["coordinates"] = normalized_coordinates
             results = query_manager.execute_query(find_ships_within_bounds, client_id, geometry)
             return jsonify(results)
         except psycopg2.errors.QueryCanceled as e:

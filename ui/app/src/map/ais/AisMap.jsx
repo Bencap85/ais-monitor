@@ -20,6 +20,7 @@ import 'leaflet/dist/leaflet.css';
 const { io } = require("socket.io-client");
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const MAPBOX_API_KEY = process.env.REACT_APP_MAPBOX_API_KEY;
 
 // Get or set unique ID to be sent to API with requests
 let clientId = localStorage.getItem("clientId");
@@ -27,7 +28,6 @@ if (!clientId) {
     clientId = crypto.randomUUID();
     localStorage.setItem("clientId", clientId);
 }
-
               
 export default function AisMap({ mapContext, setIsLoading }) {
 
@@ -158,72 +158,57 @@ export default function AisMap({ mapContext, setIsLoading }) {
         return diff > 180 ? 360 - diff : diff;
     }
 
+    function getLngSpan(lngs) {
+        // Normalize to [-180, 180]
+        const normalized = lngs.map(l => ((l + 180) % 360 + 360) % 360 - 180);
+        normalized.sort((a, b) => a - b);
+
+        const diffs = [];
+        for (let i = 0; i < normalized.length - 1; i++) {
+            diffs.push(normalized[i + 1] - normalized[i]);
+        }
+        // Add wrap-around difference
+        diffs.push(360 - (normalized[normalized.length - 1] - normalized[0]));
+
+        // The span is the complement of the largest gap
+        const maxGap = Math.max(...diffs);
+        return 360 - maxGap;
+    }
+
     const viewportHasShifted = () => {
-        const LAT_INDEX = 0
-        const LNG_INDEX = 1
+        const LNG_INDEX = 0;
+        const LAT_INDEX = 1;
 
         const previousCorners = startingViewportBounds.current[0];
         const currentCorners = mapContext.current?.viewportBoundsGeojson?.geometry?.coordinates[0];
-        
-        const previousLats = [];
-        const previousLngs = [];
-        const currentLats = [];
-        const currentLngs = [];
-        for (let i = 0; i < previousCorners.length && i < currentCorners.length; i++) {
-            previousLats.push(previousCorners[i][LAT_INDEX]);
-            previousLngs.push(previousCorners[i][LNG_INDEX]);
-            currentLats.push(currentCorners[i][LAT_INDEX]);
-            currentLngs.push(currentCorners[i][LNG_INDEX]);
+
+        const previousLats = previousCorners.map(c => c[LAT_INDEX]);
+        const previousLngs = previousCorners.map(c => c[LNG_INDEX]);
+        const currentLats = currentCorners.map(c => c[LAT_INDEX]);
+        const currentLngs = currentCorners.map(c => c[LNG_INDEX]);
+
+        let maxDiffLat = 0;
+        let maxDiffLng = 0;
+        for (let i = 0; i < previousCorners.length; i++) {
+            maxDiffLat = Math.max(maxDiffLat, Math.abs(previousLats[i] - currentLats[i]));
+            maxDiffLng = Math.max(maxDiffLng, lngDiff(previousLngs[i], currentLngs[i]));
         }
-
-        // Find max difference between current and previous lat and 
-        // max difference between current and previous longitude
-        let maxDiffLat = -1;
-        let maxDiffLng = -1;
-        let maxDiffLatIndex = -1;
-        let maxDiffLngIndex = -1;
-        for (let i = 0; i < previousLats.length; i++) {
-            const currentDiffLat = Math.abs(previousLats[i] - currentLats[i]);
-            const currentDiffLng = Math.abs(previousLngs[i] - currentLngs[i]);
-
-            if (currentDiffLat > maxDiffLat) {
-                maxDiffLat = currentDiffLat;
-                maxDiffLatIndex = i;
-            }
-            if (currentDiffLng > maxDiffLng) {
-                maxDiffLng = currentDiffLng;
-                maxDiffLngIndex = i;
-            }
-            
-        }
-
-        // Convert max differences into % increase of original values
-        const previousCornerLat = previousLats[maxDiffLatIndex];
-        const previousCornerLng = previousLngs[maxDiffLngIndex];
 
         const previousLatSpan = Math.abs(Math.max(...previousLats) - Math.min(...previousLats));
-        const previousLngSpan = lngDiff(Math.max(...previousLngs), Math.min(...previousLngs));
+        const previousLngSpan = getLngSpan(previousLngs);
 
         const maxIncreaseLat = maxDiffLat / previousLatSpan;
         const maxIncreaseLng = maxDiffLng / previousLngSpan;
 
-        // console.log(`MaxIncreaseLat: ${maxIncreaseLat}`);
-        // console.log(`MaxIncreaseLng: ${maxIncreaseLng}`);
-
         const THRESHOLD_LAT_INCREASE = 0.4;
         const THRESHOLD_LNG_INCREASE = 0.4;
 
-        if (maxIncreaseLat > THRESHOLD_LAT_INCREASE ||
-            maxIncreaseLng > THRESHOLD_LNG_INCREASE) {
-
+        if (maxIncreaseLat > THRESHOLD_LAT_INCREASE || maxIncreaseLng > THRESHOLD_LNG_INCREASE) {
             startingViewportBounds.current = [currentCorners];
             return true;
         }
         return false;
-    }
-
-
-    const API_KEY = "52kfErgC1p25crhLeyFZ";
+    };
 
     return (
         <div className='map-view-container ais-map-container' >
@@ -235,10 +220,11 @@ export default function AisMap({ mapContext, setIsLoading }) {
                     minZoom={4}
                     maxZoom={18}
                     zoomControl={false}
+                    worldCopyJump={true}
                 >
                     <TileTracker onTilesChange={handleTilesChange} />
                     <TileLayer
-                        url={`https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=${API_KEY}`}
+                        url={`https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=${MAPBOX_API_KEY}`}
                         attribution='&copy; MapTiler & OpenStreetMap contributors'
                     />
                     <CenterLogger mapContext={mapContext} />

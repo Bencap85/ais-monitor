@@ -18,7 +18,6 @@ import './AisMap.css';
 import 'leaflet/dist/leaflet.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-// Import the MarkerCluster plugin
 import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -107,36 +106,36 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
         const mmsi = lastSelectedShipRef.current.mmsi;
 
         fetch(`${API_BASE_URL}/ais/history/${mmsi}`)
-        .then(response => response.json())
-        .then(data => {
+            .then(response => response.json())
+            .then(data => {
 
-            // Sort ascending by timestamp
-            data = data?.sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp));
+                // Sort ascending by timestamp
+                data = data?.sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp));
 
-            // Exclude entries older than 24 hours
-            const now = Date.now();
-            const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-            data = data?.filter(datum => now - new Date(datum.Timestamp).getTime() <= ONE_DAY_MS);
-            
-            for (let i = 0; i < data?.length-1; i++) {
+                // Exclude entries older than 24 hours
+                const now = Date.now();
+                const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+                data = data?.filter(datum => now - new Date(datum.Timestamp).getTime() <= ONE_DAY_MS);
                 
-                const prevLatLng = [ data[i].Latitude, data[i].Longitude ];
-                const currentLatLng = [ data[i+1].Latitude, data[i+1].Longitude ];
+                for (let i = 0; i < data?.length-1; i++) {
+                    
+                    const prevLatLng = [ data[i].Latitude, data[i].Longitude ];
+                    const currentLatLng = [ data[i+1].Latitude, data[i+1].Longitude ];
 
-                const popupDataPrev = {
-                    ...data[i],
-                    Timestamp: data[i].Timestamp
+                    const popupDataPrev = {
+                        ...data[i],
+                        Timestamp: data[i].Timestamp
+                    }
+
+                    const popupDataCurrent = {
+                        ...data[i+1],
+                        Timestamp: data[i+1].Timestamp
+                    }
+
+                    drawTrail(prevLatLng, currentLatLng, mmsi, popupDataPrev, popupDataCurrent);
+
                 }
-
-                const popupDataCurrent = {
-                    ...data[i+1],
-                    Timestamp: data[i+1].Timestamp
-                }
-
-                drawTrail(prevLatLng, currentLatLng, mmsi, popupDataPrev, popupDataCurrent);
-
-            }
-        })
+            })
 
     }, [selectedShip]);
 
@@ -358,6 +357,17 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
 
         const currentMmsis = new Set(ships.map(s => s.mmsi));
         const existingMmsis = new Set(shipMarkersRef.current.keys().map(Number));
+
+        // Remove selectedShip's history (if necessary)
+        if (!currentMmsis.has(selectedShip?.mmsi)) {
+            clearTrails();
+            clearHistoryMarkers();
+        }
+
+        // Add selectedShip back in
+        if (currentMmsis.has(selectedShip?.mmsi) && !existingMmsis.has(selectedShip.mmsi)) {
+            dispatch(setSelectedShip({ ...selectedShip }));
+        }
 
         // Add ship markers that do not exist. Do not render yet.
         ships.forEach(ship => {

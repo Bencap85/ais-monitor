@@ -12,3 +12,5 @@ dataclasses; python_version < "3.7"  # only needed if you run <3.7
 
 # Logging / monitoring (optional but recommended)
 structlog==24.1.0
+
+pytest
