@@ -5,7 +5,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setSelectedShip } from '../../slice/selectedShipSlice.js';
 import { selectAllShips, selectShipByMmsi, upsertShips, selectFilteredShips, clearShips, setShips } from '../../slice/aisShipsSlice.js';
 import { store } from '../../store.js';
-import { SHIP_STATUSES } from '../../constants/constants.js';
+import { SHIP_STATUSES, NAVIGATIONAL_STATUS, CODE_TO_NAVIGATIONAL_STATUS } from '../../constants/constants.js';
+import { getMarkerColor, getMarkerShape, MARKER_SHAPE } from '../../AisShipMarkerConfig.js';
 import ReactDOM from 'react-dom';
 import React from 'react';
 import TileTracker from '../TileTracker.jsx';
@@ -28,8 +29,23 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const WS_URL = process.env.REACT_APP_WS_URL;
 const TRAIL_COLOR = "red";
 const SELECTED_TRAIL_COLOR = "red";
-const SHIP_COLOR = "limegreen";
-const SELECTED_SHIP_COLOR = "red";
+const SELECTED_SHIP_COLOR = "white";
+
+/*
+Improvements:
+
+    1. Add different shapes for different statuses. Circle for anchored, ship for heading known, circle for unknown.
+
+    2. Add different colors for different types
+        - Green -> Unknown/Fishing/Sailing
+        - Red -> Military/Government
+        - Blue -> Cargo/Tanker
+        - Blue -> Tugs/Pilot
+        - Orange -> Search and Rescue
+
+    3. Add size differences based on ship length
+
+*/
 
 export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick, mapContext }) {
     const map = useMap();
@@ -54,7 +70,7 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
     const metrics = useRef({});
 
     const clusterGroupRef = useRef(L.markerClusterGroup({
-        disableClusteringAtZoom: 12,
+        disableClusteringAtZoom: 10,
         maxClusterRadius: 60,
         iconCreateFunction: cluster => {
             const markers = cluster.getAllChildMarkers();
@@ -86,8 +102,11 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
         // Reset last selected color (if different)
         if (lastSelectedShipRef?.current && lastSelectedShipRef?.current.mmsi !== selectedShip?.mmsi) {
             
+            const shipColor = getMarkerColor(lastSelectedShipRef.current);
+            const markerShape = getMarkerShape(lastSelectedShipRef.current);
+
             shipMarkersRef.current.get(lastSelectedShipRef.current.mmsi)
-            ?.setIcon(createAisShipIcon(lastSelectedShipRef.current.TrueHeading, SHIP_COLOR));
+            ?.setIcon(createAisShipIcon(lastSelectedShipRef.current.TrueHeading, shipColor, markerShape));
         
         }
 
@@ -144,35 +163,54 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
         const marker = shipMarkersRef.current.get(ship.mmsi);
         if (!marker) return;
 
-        const highlightIcon = createAisShipIcon(ship.TrueHeading, SELECTED_SHIP_COLOR);
+        const markerShape = getMarkerShape(ship);
+        const highlightIcon = createAisShipIcon(ship.TrueHeading, SELECTED_SHIP_COLOR, markerShape);
         marker.setIcon(highlightIcon);
 
     }
 
+    const createAisShipIcon = (heading, color, shape) => {
+        let shapeHtml;
 
-    const createAisShipIcon = (heading, color) => {
+        switch (shape) {
+            case MARKER_SHAPE.CIRCLE:
+                shapeHtml = `<circle class="ais-ship-icon-polygon" cx="10" cy="20" r="6" fill="${color}" />`;
+                break;
+            case MARKER_SHAPE.SQUARE:
+                shapeHtml = `<rect class="ais-ship-icon-polygon" x="4" y="12" width="12" height="12" fill="${color}" />`;
+                break;
+            case MARKER_SHAPE.SHIP:
+            default:
+                shapeHtml = `<polygon class="ais-ship-icon-polygon" points="10,0 18,8 18,50 2,50 2,8" fill="${color}" />`;
+                break;
+        }
+
         const svgIcon = L.divIcon({
-            className: 'ais-ship-icon',
+            className: "ais-ship-icon",
             html: `
-                    <div class="pulse-wrapper">
-                        <svg class="ais-ship-icon" width="8" height="40" viewBox="0 0 20 20" style="transform: rotate(${heading !== 511 ? heading : 0}deg);">
-                            <polygon class="ais-ship-icon-polygon" points="10,0 18,8 18,40 2,40 2,8" fill=${color} />
-                        </svg>
-                    </div>
-                `,
-            iconSize: [8, 40],
-            iconAnchor: [4, 20]
+            <div class="pulse-wrapper">
+                <svg class="ais-ship-icon" width="10" height="20" viewBox="0 0 20 40"
+                    style="transform: rotate(${heading !== 511 ? heading : 0}deg);">
+                ${shapeHtml}
+                </svg>
+            </div>
+            `,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
         });
+
         return svgIcon;
-    }
+    };
 
     const createAisShipMarker = (ship) => {
         if (!ship || !ship.Latitude || !ship.Longitude) {
             return;
         }
 
+        const shipColor = getMarkerColor(ship);
         const heading = ship.TrueHeading || 0;
-        const svgIcon = createAisShipIcon(heading, SHIP_COLOR);
+        const markerShape = getMarkerShape(ship);
+        const svgIcon = createAisShipIcon(heading, shipColor, markerShape);
         const latlng = [ship?.Latitude, ship?.Longitude];
         
         const marker = L.marker(latlng, { 

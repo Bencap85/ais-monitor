@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, make_response
 import threading
 import os
 import json
+import logging
 import requests
 from flask_cors import CORS
 from db import connect_to_database, find_ships_within_bounds, history_for_mmsi
@@ -12,7 +13,7 @@ from query_manager import QueryManager
 from settings import Settings
 from coordinate_utils.utils import normalize_coordinates
 
-
+logger = logging.getLogger(__name__)
 settings = Settings()
     
 def create_api() -> Flask:
@@ -31,29 +32,27 @@ def create_api() -> Flask:
     @app.post("/api/ships-within-bounds")
     def ships_within_bounds():
         client_id = request.headers.get("X-Client-ID") or request.remote_addr
-        geojson = request.json.get("geojson")
-        if not geojson:
-            return jsonify({"error": "Missing GeoJSON"}), 400
-        
-        geometry = geojson.get("geometry")
-        if not geometry:
-            return jsonify({"error": "GeoJSON is missing required 'geometry' object"}), 400
 
-        coordinates = geometry.get("coordinates")
-        if not coordinates:
-            return jsonify({"error": "GeoJSON is missing required 'coordinates' object"}), 400
+        try:
+            geojson = request.json.get("geojson")
+            geometry = geojson["geometry"]
+            coordinates = geometry["coordinates"]
+        except (KeyError, TypeError) as k:
+            logger.info(f"Invalid request, {request.json}")
+            return jsonify({"error": "Invalid request", "reason": str(k)}), 400
 
         try:
             normalized_coordinates = normalize_coordinates(coordinates)
             geometry["coordinates"] = normalized_coordinates
             results = query_manager.execute_query(find_ships_within_bounds, client_id, geometry)
             return jsonify(results)
+        
         except psycopg2.errors.QueryCanceled as e:
-            print(f"Query for client {client_id} was cancelled")
+            logger.info(f"Query for client {client_id} was cancelled")
             return jsonify([])
         except Exception as e:
-            print("Query failed:", e)
-            return jsonify({"error": "Query failed"}), 500
+            logger.error("Request failed:", e)
+            return jsonify({"error": "Request failed"}), 500
         
     @app.route('/api/history/<int:mmsi>', methods=['GET'])
     def get_history(mmsi: int):

@@ -1,6 +1,6 @@
 import { createSlice, createEntityAdapter, createSelector } from '@reduxjs/toolkit';
 import { selectQuery } from './searchSlice'; // import the query selector
-import { NAVIGATIONAL_STATUSES } from '../constants/constants';
+import { CODE_TO_NAVIGATIONAL_STATUS } from '../constants/constants';
 
 const aisShipsAdapter = createEntityAdapter({
   selectId: (ship) => ship.mmsi, // Use MMSI as the unique ID
@@ -35,7 +35,7 @@ export const selectFilteredShips = createSelector(
     const q = query.toLowerCase().trim();
     return allShips.filter(ship =>
       ship.mmsi?.toString().toLowerCase().includes(q) ||
-      NAVIGATIONAL_STATUSES[ship.NavigationalStatus]?.toLowerCase().includes(query.toLowerCase()) ||
+      CODE_TO_NAVIGATIONAL_STATUS[ship.NavigationalStatus]?.toLowerCase().includes(query.toLowerCase()) ||
       ship.Name?.toString().toLowerCase().trim().includes(q) ||
       ship.ShipTypeName?.toString().toLowerCase().trim().includes(q)
       

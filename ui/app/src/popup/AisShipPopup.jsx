@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
 import { setSelectedShip } from '../slice/selectedShipSlice.js';
 import { getStatus } from '../sidebar/AisShipsListItem.jsx';
-import { NAVIGATIONAL_STATUSES, SHIP_STATUSES } from '../constants/constants.js';
+import { CODE_TO_NAVIGATIONAL_STATUS, SHIP_STATUSES } from '../constants/constants.js';
 import "./AisShipPopup.css";
 import PopupHeader from './PopupHeader.jsx';
 
@@ -82,7 +82,7 @@ export default function AisShipPopup({ ship }) {
                     </div>
                     <div className="ship-popup-item">
                         <div className="label">Navigational Status</div>
-                        <div className="value">{NAVIGATIONAL_STATUSES[ship?.NavigationalStatus] || "Unknown"}</div>
+                        <div className="value">{CODE_TO_NAVIGATIONAL_STATUS[ship?.NavigationalStatus] || "Unknown"}</div>
                     </div>
                     <div className="ship-popup-item">
                         <div className="label">Speed Over Ground</div>

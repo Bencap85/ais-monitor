@@ -1,4 +1,4 @@
-import { NAVIGATIONAL_STATUSES, SHIP_STATUSES } from "../constants/constants";
+import { CODE_TO_NAVIGATIONAL_STATUS, SHIP_STATUSES } from "../constants/constants";
 import { useSelector } from 'react-redux';
 // import { selectedShip } from '../slice/selectedShipSlice.js';
 import "./AisShipsListItem.css";
@@ -47,7 +47,7 @@ export default function AisShipsListItem({ ship, onClick } ) {
                         Status:
                     </div>
                     <div className="value">
-                        {NAVIGATIONAL_STATUSES[ship?.NavigationalStatus] || "Unknown"}
+                        {CODE_TO_NAVIGATIONAL_STATUS[ship?.NavigationalStatus] || "Unknown"}
                     </div>
                 </div>
 
