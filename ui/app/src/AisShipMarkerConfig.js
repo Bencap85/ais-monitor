@@ -1,7 +1,7 @@
 import { NAVIGATIONAL_STATUS, NAVIGATIONAL_STATUS_TO_CODE, CODE_TO_NAVIGATIONAL_STATUS, SHIP_STATUSES } from "./constants/constants";
 import { getStatus } from "./sidebar/AisShipsListItem";
 
-
+// Active ships
 const colors = {
     BLUE: "#008cffff",
     GREEN: "#11ff00ff",
@@ -10,6 +10,7 @@ const colors = {
     RED: "#ff0000ff",
 }
 
+// Inactive ships
 const darkColors = {
     DARK_BLUE: "#0063b4ff",
     DARK_GREEN: "#0a9500ff",
@@ -18,6 +19,7 @@ const darkColors = {
     DARK_RED: "#8e0000ff"
 }
 
+// Used to convert light colors to their corresponding dark colors
 const COLOR_TO_DARK = {
     [colors.BLUE]: darkColors.DARK_BLUE, 
     [colors.GREEN]: darkColors.DARK_GREEN, 

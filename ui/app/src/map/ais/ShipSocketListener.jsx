@@ -96,9 +96,6 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
 
     useEffect(() => {
 
-        clearTrails();
-        clearHistoryMarkers();
-
         // Reset last selected color (if different)
         if (lastSelectedShipRef?.current && lastSelectedShipRef?.current.mmsi !== selectedShip?.mmsi) {
             
@@ -121,40 +118,64 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
             clusterGroupRef.current.refreshClusters();
         }
 
-        lastSelectedShipRef.current = selectedShip;
-        const mmsi = lastSelectedShipRef.current.mmsi;
+        // If this is an update to the same selected ship, draw new trail segment
+        if (lastSelectedShipRef?.current?.mmsi === selectedShip?.mmsi) {
+            const prevLatLng = [ lastSelectedShipRef.current.Latitude, lastSelectedShipRef.current.Longitude ];
+            const latLng = [ selectedShip.Latitude, selectedShip.Longitude ];
+            const prevPointData = {
+                Sog: lastSelectedShipRef.current.Sog,
+                Timestamp: lastSelectedShipRef.current.LastUpdated,
+                TrueHeading: lastSelectedShipRef.current.TrueHeading
+            };
+            const pointData = {
+                Sog: selectedShip.Sog,
+                Timestamp: selectedShip.LastUpdated,
+                TrueHeading: selectedShip.TrueHeading
+            };
+            
+            updateAisShipMarker(shipMarkersRef.current.get(selectedShip.mmsi), selectedShip);
+            drawTrail(prevLatLng, latLng, prevPointData, pointData);
 
-        fetch(`${API_BASE_URL}/ais/history/${mmsi}`)
-            .then(response => response.json())
-            .then(data => {
+        } else {
+            
+            clearTrails();
+            clearHistoryMarkers();
 
-                // Sort ascending by timestamp
-                data = data?.sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp));
+            lastSelectedShipRef.current = selectedShip;
+            const mmsi = lastSelectedShipRef.current.mmsi;
 
-                // Exclude entries older than 24 hours
-                const now = Date.now();
-                const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-                data = data?.filter(datum => now - new Date(datum.Timestamp).getTime() <= ONE_DAY_MS);
-                
-                for (let i = 0; i < data?.length-1; i++) {
+            fetch(`${API_BASE_URL}/ais/history/${mmsi}`)
+                .then(response => response.json())
+                .then(data => {
+
+                    // Sort ascending by timestamp
+                    data = data?.sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp));
+
+                    // Exclude entries older than 24 hours
+                    const now = Date.now();
+                    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+                    data = data?.filter(datum => now - new Date(datum.Timestamp).getTime() <= ONE_DAY_MS);
                     
-                    const prevLatLng = [ data[i].Latitude, data[i].Longitude ];
-                    const currentLatLng = [ data[i+1].Latitude, data[i+1].Longitude ];
+                    for (let i = 0; i < data?.length-1; i++) {
+                        
+                        const prevLatLng = [ data[i].Latitude, data[i].Longitude ];
+                        const currentLatLng = [ data[i+1].Latitude, data[i+1].Longitude ];
 
-                    const popupDataPrev = {
-                        ...data[i],
-                        Timestamp: data[i].Timestamp
+                        const popupDataPrev = {
+                            ...data[i],
+                            Timestamp: data[i].Timestamp
+                        }
+
+                        const popupDataCurrent = {
+                            ...data[i+1],
+                            Timestamp: data[i+1].Timestamp
+                        }
+
+                        drawTrail(prevLatLng, currentLatLng, mmsi, popupDataPrev, popupDataCurrent);
+
                     }
-
-                    const popupDataCurrent = {
-                        ...data[i+1],
-                        Timestamp: data[i+1].Timestamp
-                    }
-
-                    drawTrail(prevLatLng, currentLatLng, mmsi, popupDataPrev, popupDataCurrent);
-
-                }
-            })
+                })
+        }
 
     }, [selectedShip]);
 
@@ -347,15 +368,15 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
             `;
 
             const prevMarker = L.circleMarker(prevLatLng, {
-                radius: 0.1,
-                color: TRAIL_COLOR,
-                opacity: 0
-            }).addTo(map);
+                    radius: 0.1,
+                    color: TRAIL_COLOR,
+                    opacity: 0
+                }).addTo(map);
 
             prevMarker.bindTooltip(popupContentPrev, {
-                direction: "top",
-                className: trailPopupClassName
-            });
+                    direction: "top",
+                    className: trailPopupClassName
+                });
 
             const marker = L.circleMarker(latLng, {
                 radius: 0.1,
@@ -471,7 +492,7 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
 
             socket.on("ais_update", (data) => {
 
-                // Determine if this ship is within the viewport. NEED TO TEST THIS
+                // Determine if this ship is within the viewport
                 const viewportBounds = mapContext.current?.viewportBoundsGeojson?.geometry?.coordinates
                 const cornersList = viewportBounds[0];
 
