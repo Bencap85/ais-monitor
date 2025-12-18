@@ -6,6 +6,7 @@ import random
 import os
 import logging
 import sys
+import boto3
 from kafka import KafkaProducer
 from websocket import create_connection
 from websocket._exceptions import WebSocketConnectionClosedException
@@ -37,7 +38,14 @@ class AisIngestor:
     
     def __init__(self, kafka_producer: KafkaProducer):
         self.ws_connection = self._connect_to_ws()
-        self.kafka_producer = kafka_producer
+        self.sns_client = boto3.client(
+            "sns", 
+            region_name=settings.aws_region_name,
+            endpoint_url=settings.aws_url)
+        self.topic_arn = settings.sns_topic_arn
+
+        self.buffer = []
+        self.batch_size = 10
         
         self.stats = {
             "message_count": 0,
@@ -47,7 +55,20 @@ class AisIngestor:
         }
 
     def _queue_message(self, ais_message: dict) -> None:
-        self.kafka_producer.send(settings.kafka_topic, value=ais_message)
+        self.buffer.append(ais_message)
+
+        if (len(self.buffer) >= self.batch_size):
+            try:
+                payload = json.dumps(self.buffer)
+                self.sns_client.publish(
+                    TopicArn=self.topic_arn,
+                    Message=payload
+                )
+                logger.info(f"Published batch of {len(self.buffer)} messages to SNS")
+                self.buffer.clear()
+            except Exception as e:
+                logger.error(f"Failed to publish batch: {e}")
+
 
     def _handle_message(self, message: dict) -> None:
         if message is None:
