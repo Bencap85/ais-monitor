@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
+
+    broadcaster_port: int = 5000
     
     # Database
     db_name: str

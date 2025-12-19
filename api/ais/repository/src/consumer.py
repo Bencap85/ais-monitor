@@ -12,12 +12,6 @@ from settings import Settings
 from db import batch_update_history, batch_upsert_ships, batch_upsert_static_data
 
 logger = logging.getLogger(__name__)
-
-logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
-    )
-
 settings = Settings()
 
 POSITION_REPORT_IDS = {1, 2, 3}
@@ -36,7 +30,12 @@ class AisConsumer():
         self.batch_ships = {}
         self.batch_history = []
         self.batch_static = {}
-        self.message_count = 0
+
+        self.stats = {
+            "message_count": 0,
+            "messages_per_second": 0,
+            "start_time": None
+        }
 
     def _flush_ships(self) -> None:
         batch_upsert_ships(self.conn, self.batch_ships.values())
@@ -67,9 +66,18 @@ class AisConsumer():
         else:
             logger.info(f"Unsupported message type! Received {message_type}")
 
-        self.message_count += 1
-        if self.message_count % 1000 == 0:
-            logger.info(f"{self.message_count}th message received ************************")
+        self.stats["message_count"] += 1
+        if self.stats["message_count"] % 1000 == 0:
+
+            # Calculate messages/second
+            elapsed_time = datetime.now(timezone.utc) - self.stats["start_time"]
+            elapsed_seconds = elapsed_time.total_seconds()
+            messages_per_second = self.stats["message_count"] / elapsed_seconds
+            
+            self.stats["messages_per_second"] = messages_per_second
+            logger.info(str(self.stats))
+
+            # Flush update queues
             self._flush_ships()
         
     def _delete_messages(self, messages: list) -> None:
@@ -87,6 +95,7 @@ class AisConsumer():
             )
 
     def run(self):
+        self.stats["start_time"] = datetime.now(timezone.utc)
         while True:
             try:
                 response = self.sqs_client.receive_message(
@@ -107,17 +116,9 @@ class AisConsumer():
                     sns_envelope = json.loads(body)
                     batch_payload = json.loads(sns_envelope["Message"])
 
-                    # logger.info(f"Received batch of {len(batch_payload)} AIS messages")
-
                     # Process each AIS message individually
                     for ais_message in batch_payload:
                         self._handle_message(ais_message)
-
-                    # Delete message from queue after processing
-                    # self.sqs_client.delete_message(
-                    #     QueueUrl=self.queue_url,
-                    #     ReceiptHandle=msg["ReceiptHandle"]
-                    # )
 
                 self._delete_messages(messages)
 

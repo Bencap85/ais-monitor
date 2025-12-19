@@ -1,6 +1,9 @@
 import math
+import logging
 from shapely.geometry import shape, box
 
+
+logger = logging.getLogger(__name__)
 
 def lonlat_to_tile(lon, lat, zoom):
     """Convert lon/lat to tile x/y at a given zoom level."""
@@ -37,3 +40,22 @@ def get_intersecting_tiles(geojson, zoom=6):
             if polygon.intersects(tile_poly):
                 tiles.append(f"{zoom}_{x}_{y}")
     return tiles
+
+def get_tile_id(lat, lon, zoom=6):
+        """Returns the tile id of a point. Used to map ships to its corresponding Websocket update channel."""
+        try:
+            if lat is None or lon is None:
+                raise ValueError("Latitude or longitude is None")
+            if not (-85.0511 <= lat <= 85.0511):
+                raise ValueError(f"Latitude {lat} out of bounds")
+            if not (-180 <= lon <= 180):
+                raise ValueError(f"Longitude {lon} out of bounds")
+        except Exception as e:
+            logger.error(str(e))
+            return None
+        
+        lat_rad = math.radians(lat)
+        n = 2.0 ** zoom
+        x_tile = int((lon + 180.0) / 360.0 * n)
+        y_tile = int((1.0 - math.log(math.tan(lat_rad) + 1 / math.cos(lat_rad)) / math.pi) / 2.0 * n)
+        return f"{zoom}_{x_tile}_{y_tile}"

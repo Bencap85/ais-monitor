@@ -9,6 +9,11 @@ from settings import Settings
 
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    )
+
 settings = Settings()
 
 def start_consumer() -> None:
@@ -18,11 +23,7 @@ def start_consumer() -> None:
         return
     
     consumer = AisConsumer(connection)
-
-    for i in range(3):
-        thread = threading.Thread(target=consumer.run, daemon=True)
-        thread.start()
-        logger.info("Started thread " + str(i))
+    consumer.run()
 
 def start_history_pruner() -> None:
     def prune_job()-> None:
