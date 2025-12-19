@@ -2,9 +2,13 @@ import logging
 from typing import Dict, Any, Iterable, Optional
 from datetime import datetime, timezone
 import os
+import boto3
+import time
+import json
+from concurrent.futures import ThreadPoolExecutor
 import psycopg2.extras
 from psycopg2.extensions import connection
-import connect_as_kafka_consumer
+from settings import Settings
 from db import batch_update_history, batch_upsert_ships, batch_upsert_static_data
 
 logger = logging.getLogger(__name__)
@@ -14,13 +18,20 @@ logging.basicConfig(
         format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
     )
 
+settings = Settings()
+
 POSITION_REPORT_IDS = {1, 2, 3}
 STATIC_DATA_IDS = {5}
 
 class AisConsumer():
     def __init__(self, conn: connection):
         self.conn = conn
-        self.consumer = connect_as_kafka_consumer.connect()
+        self.sqs_client = boto3.client(
+            "sqs",
+            region_name=settings.aws_region_name,
+            endpoint_url=settings.aws_url
+        )
+        self.queue_url = settings.sqs_url                          
 
         self.batch_ships = {}
         self.batch_history = []
@@ -57,26 +68,61 @@ class AisConsumer():
             logger.info(f"Unsupported message type! Received {message_type}")
 
         self.message_count += 1
-        if self.message_count % 2000 == 0:
+        if self.message_count % 1000 == 0:
             logger.info(f"{self.message_count}th message received ************************")
             self._flush_ships()
         
+    def _delete_messages(self, messages: list) -> None:
+        entries = []
+        for i, msg in enumerate(messages):
+            entries.append({
+                "Id": str(i),  # unique ID for this delete request
+                "ReceiptHandle": msg["ReceiptHandle"]
+            })
 
-    def run(self) -> None:
-        try:
-            for message in self.consumer:
-                if message is None or message.value is None:
-                    logger.info("Received empty message")
-                    continue
+        if entries:
+            resp = self.sqs_client.delete_message_batch(
+                QueueUrl=self.queue_url,
+                Entries=entries
+            )
+
+    def run(self):
+        while True:
+            try:
+                response = self.sqs_client.receive_message(
+                    QueueUrl=self.queue_url,
+                    MaxNumberOfMessages=10,   # up to 10 SQS messages at once
+                    WaitTimeSeconds=2         # long polling
+                )
                 
-                self._handle_message(message.value)
+                messages = response.get("Messages", [])
+                if not messages:
+                    logger.info("No messages available, waiting...")
+                    continue
 
-        except KeyboardInterrupt:
-            logger.info("Shutting down consumer...")
+                for msg in messages:
+                    body = msg["Body"]
 
-        except Exception as e:
-            logger.error(e)
+                    # SNS wraps the payload in its own envelope
+                    sns_envelope = json.loads(body)
+                    batch_payload = json.loads(sns_envelope["Message"])
 
+                    # logger.info(f"Received batch of {len(batch_payload)} AIS messages")
+
+                    # Process each AIS message individually
+                    for ais_message in batch_payload:
+                        self._handle_message(ais_message)
+
+                    # Delete message from queue after processing
+                    # self.sqs_client.delete_message(
+                    #     QueueUrl=self.queue_url,
+                    #     ReceiptHandle=msg["ReceiptHandle"]
+                    # )
+
+                self._delete_messages(messages)
+
+            except Exception as e:
+                logger.error(f"Error consuming messages: {e}")
+                time.sleep(5)
             
-
 

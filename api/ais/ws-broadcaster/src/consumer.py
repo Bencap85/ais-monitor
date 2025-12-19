@@ -1,16 +1,27 @@
 import logging
 import time
 import math
-import connect_as_kafka_consumer
+import boto3
+import json
+from concurrent.futures import ThreadPoolExecutor
+from settings import Settings
 from app import socketio
 
 
 logger = logging.getLogger(__name__)
+settings = Settings()
+
 POSITION_REPORT_IDS = [ 1, 2, 3 ]
 
 class AisConsumer():
+
     def __init__(self):
-        self.kafka_consumer = connect_as_kafka_consumer.connect()
+        self.sqs_client = boto3.client(
+            "sqs",
+            region_name=settings.aws_region_name,
+            endpoint_url=settings.aws_url
+        )
+        self.queue_url = settings.sqs_url
         self.message_count = 0
 
     def get_tile_id(self, lat, lon, zoom=6):
@@ -34,7 +45,7 @@ class AisConsumer():
     def _handle_message(self, message: dict) -> None:
         self.message_count += 1
 
-        ship_data = message.value
+        ship_data = message
         message_type = ship_data.get("MessageID", -1)
         if message_type not in POSITION_REPORT_IDS:
             return
@@ -48,6 +59,56 @@ class AisConsumer():
         if self.message_count % 1000 == 0:
             logger.info(f"{self.message_count}th message received ************************")
 
+    def _delete_messages(self, messages: list) -> None:
+        entries = []
+        for i, msg in enumerate(messages):
+            entries.append({
+                "Id": str(i),  # unique ID for this delete request
+                "ReceiptHandle": msg["ReceiptHandle"]
+            })
+
+        if entries:
+            resp = self.sqs_client.delete_message_batch(
+                QueueUrl=self.queue_url,
+                Entries=entries
+            )
+
     def run(self):
-        for message in self.kafka_consumer:
-            self._handle_message(message)
+        while True:
+            try:
+                response = self.sqs_client.receive_message(
+                    QueueUrl=self.queue_url,
+                    MaxNumberOfMessages=10,   # up to 10 SQS messages at once
+                    WaitTimeSeconds=2         # long polling
+                )
+
+                messages = response.get("Messages", [])
+                if not messages:
+                    logger.info("No messages available, waiting...")
+                    continue
+
+                for msg in messages:
+                    body = msg["Body"]
+
+                    # SNS wraps the payload in its own envelope
+                    sns_envelope = json.loads(body)
+                    batch_payload = json.loads(sns_envelope["Message"])
+
+                    # logger.info(f"Received batch of {len(batch_payload)} AIS messages")
+
+                    # Process each AIS message individually
+                    for ais_message in batch_payload:
+                        self._handle_message(ais_message)
+
+                    # Delete message from queue after processing
+                    # self.sqs_client.delete_message(
+                    #     QueueUrl=self.queue_url,
+                    #     ReceiptHandle=msg["ReceiptHandle"]
+                    # )
+
+                self._delete_messages(messages)
+
+            except Exception as e:
+                logger.error(f"Error consuming messages: {e}")
+                time.sleep(5)
+

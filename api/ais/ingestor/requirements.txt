@@ -1,5 +1,4 @@
 websockets
-kafka-python
 websocket-client
 pydantic-settings
 boto3

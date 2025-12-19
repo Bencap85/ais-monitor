@@ -18,12 +18,15 @@ def start_consumer() -> None:
         return
     
     consumer = AisConsumer(connection)
-    consumer.run()
+
+    for i in range(3):
+        thread = threading.Thread(target=consumer.run, daemon=True)
+        thread.start()
+        logger.info("Started thread " + str(i))
 
 def start_history_pruner() -> None:
     def prune_job()-> None:
         PRUNE_QUERY_NAME = 'prune_ais_ships_history'
-        MAX_HISTORY_RECORDS = 100
 
         connection = connect_to_database()
         if connection is None:
@@ -33,7 +36,7 @@ def start_history_pruner() -> None:
         cursor = connection.cursor()
         try:
             logger.info("Prune job initiated")
-            cursor.execute(f"CALL {PRUNE_QUERY_NAME}(%s)", (settings.max_history_per_mmsi))
+            cursor.execute(f"CALL {PRUNE_QUERY_NAME}(%s)", (settings.max_history_per_mmsi,))
             connection.commit()
             logger.info("Prune job completed")
         except Exception as e:
@@ -45,7 +48,7 @@ def start_history_pruner() -> None:
             connection.close()
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(prune_job, "interval", minutes=settings.db_history_prune_query_interval)
+    scheduler.add_job(prune_job, "interval", minutes=settings.history_prune_query_interval)
     scheduler.start()
 
     logger.info("History pruner scheduler started")

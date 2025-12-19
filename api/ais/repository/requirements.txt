@@ -1,5 +1,4 @@
 websockets
-kafka-python
 psycopg2-binary
 flask
 Flask-Cors
@@ -9,8 +8,7 @@ pydantic-settings
 
 python-dotenv==1.0.1   # for loading .env files
 dataclasses; python_version < "3.7"  # only needed if you run <3.7
-
-# Logging / monitoring (optional but recommended)
 structlog==24.1.0
 
 pytest
+boto3
