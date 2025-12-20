@@ -38,7 +38,7 @@ class AisIngestor:
         self.topic_arn = settings.sns_topic_arn
 
         self.buffer = []
-        self.batch_size = 10
+        self.batch_size = settings.ais_message_batch_size
         
         self.stats = {
             "message_count": 0,
@@ -59,7 +59,7 @@ class AisIngestor:
                 )
                 self.buffer.clear()
             except Exception as e:
-                logger.error(f"Failed to publish batch: {e}")
+                logger.error(f"Failed to publish batch {payload}: {e}")
 
 
     def _handle_message(self, message: dict) -> None:

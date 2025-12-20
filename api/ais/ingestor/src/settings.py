@@ -2,6 +2,8 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
+    ais_message_batch_size: int
+    
     # Websocket API
     ws_api_key: str
     ws_api_url: str = "wss://stream.aisstream.io/v0/stream"

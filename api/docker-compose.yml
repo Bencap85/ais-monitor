@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./ais/ws-broadcaster/.env
+    volumes:
+      - ./ais/ws-broadcaster/src:/app
     container_name: ais_ws_broadcaster
     ports:
       - "5000:5000"
@@ -17,6 +19,8 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./ais/repository/.env
+    volumes:
+      - ./ais/repository/src:/app
     container_name: ais_repository
     restart: unless-stopped
     depends_on:
@@ -28,6 +32,8 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./ais/ingestor/.env
+    volumes:
+      - ./ais/ingestor/src:/app
     container_name: ais_ingestor
     restart: unless-stopped
     depends_on:
