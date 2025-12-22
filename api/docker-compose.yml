@@ -12,6 +12,7 @@ services:
     ports:
       - "5000:5000"
     restart: unless-stopped
+    profiles: ["dev"]
 
   ais-repository:
     build:
@@ -25,6 +26,7 @@ services:
     restart: unless-stopped
     depends_on:
       - ais-ws-broadcaster
+    profiles: ["dev"]
 
   ais-ingestor:
     build:
@@ -38,6 +40,7 @@ services:
     restart: unless-stopped
     depends_on:
       - ais-repository
+    profiles: ["dev"]
 
   localstack:
     image: localstack/localstack:latest
