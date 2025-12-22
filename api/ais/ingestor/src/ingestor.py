@@ -57,9 +57,11 @@ class AisIngestor:
                     TopicArn=self.topic_arn,
                     Message=payload
                 )
-                self.buffer.clear()
+
             except Exception as e:
                 logger.error(f"Failed to publish batch {payload}: {e}")
+        
+            self.buffer.clear()
 
 
     def _handle_message(self, message: dict) -> None:

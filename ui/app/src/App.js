@@ -27,7 +27,7 @@ function App() {
     viewportBoundsGeojson: null
   });
 
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const REPOSITORY_SERVICE_BASE_URL = process.env.REACT_APP_REPOSITORY_SERVICE_BASE_URL;
 
   // Selected Ship from redux store
   const dispatch = useDispatch();
@@ -62,7 +62,7 @@ function App() {
 
   const handleAddZone = (newZone) => {
     
-    fetch(`${API_BASE_URL}/detect`, {
+    fetch(`${REPOSITORY_SERVICE_BASE_URL}/detect`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -82,7 +82,7 @@ function App() {
         let isFirstPoll = true;
 
         const pollStatus = () => {
-          fetch(`${API_BASE_URL}/${pipelineId}/status`)
+          fetch(`${REPOSITORY_SERVICE_BASE_URL}/${pipelineId}/status`)
             .then(res => res.json())
             .then(status => {
               console.log(`Stage: ${status?.stage}, Progress: ${status?.progress}`);
@@ -135,7 +135,7 @@ function App() {
               // End progress animation
 
               if (status.stage === "PipelineStage.COMPLETED") {
-                fetch(`${API_BASE_URL}/${pipelineId}/result`)
+                fetch(`${REPOSITORY_SERVICE_BASE_URL}/${pipelineId}/result`)
                   .then(res => res.json())
                   .then(result => {
                     const features = result.features;

@@ -25,27 +25,11 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 const { io } = require("socket.io-client");
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const REPOSITORY_SERVICE_BASE_URL = process.env.REACT_APP_REPOSITORY_SERVICE_BASE_URL;
 const WS_URL = process.env.REACT_APP_WS_URL;
 const TRAIL_COLOR = "red";
 const SELECTED_TRAIL_COLOR = "red";
 const SELECTED_SHIP_COLOR = "white";
-
-/*
-Improvements:
-
-    1. Add different shapes for different statuses. Circle for anchored, ship for heading known, circle for unknown.
-
-    2. Add different colors for different types
-        - Green -> Unknown/Fishing/Sailing
-        - Red -> Military/Government
-        - Blue -> Cargo/Tanker
-        - Blue -> Tugs/Pilot
-        - Orange -> Search and Rescue
-
-    3. Add size differences based on ship length
-
-*/
 
 export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick, mapContext }) {
     const map = useMap();
@@ -144,7 +128,7 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
             lastSelectedShipRef.current = selectedShip;
             const mmsi = lastSelectedShipRef.current.mmsi;
 
-            fetch(`${API_BASE_URL}/ais/history/${mmsi}`)
+            fetch(`${REPOSITORY_SERVICE_BASE_URL}/history/${mmsi}`)
                 .then(response => response.json())
                 .then(data => {
 

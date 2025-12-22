@@ -19,7 +19,7 @@ import './AisMap.css';
 import 'leaflet/dist/leaflet.css';
 const { io } = require("socket.io-client");
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const REPOSITORY_SERVICE_BASE_URL = process.env.REACT_APP_REPOSITORY_SERVICE_BASE_URL;
 const MAPBOX_API_KEY = process.env.REACT_APP_MAPBOX_API_KEY;
 
 // Get or set unique ID to be sent to API with requests
@@ -74,7 +74,7 @@ export default function AisMap({ mapContext, setIsLoading }) {
 
         setIsLoading(true);
 
-        fetch(`${API_BASE_URL}/ais/ships-within-bounds`, {
+        fetch(`${REPOSITORY_SERVICE_BASE_URL}/ships-within-bounds`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

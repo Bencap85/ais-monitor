@@ -24,6 +24,8 @@ services:
       - ./ais/repository/src:/app
     container_name: ais_repository
     restart: unless-stopped
+    ports:
+      - "8080:8080"
     depends_on:
       - ais-ws-broadcaster
     profiles: ["dev"]
@@ -66,24 +68,6 @@ services:
       retries: 20
       start_period: 5s
     profiles: ["infra"]
-
-  controller:
-    build:
-      context: ./controller
-      dockerfile: Dockerfile
-    env_file:
-      - ./controller/.env
-    container_name: controller
-    ports:
-      - "8080:8080"
-    restart: unless-stopped
-
-  ml:
-    build:
-      context: ./ml
-      dockerfile: Dockerfile
-    container_name: ml
-    restart: unless-stopped
 
 volumes:
   localstack_data:

@@ -31,6 +31,33 @@ def create_api() -> Flask:
 
     @app.post("/api/ships-within-bounds")
     def ships_within_bounds():
+        """
+        Returns ships detected via AIS within a particular region.
+
+        Parameters:
+            {
+                geojson: {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [-76.37221,36.96841],
+                                [-76.37221,36.981301],
+                                [-76.354526,36.981301],
+                                [-76.354526,36.96841],
+                                [-76.37221,36.96841]
+                            ]
+                        ]
+                    }
+                }
+            }
+
+        Returns:
+            List of ships
+
+        """
         client_id = request.headers.get("X-Client-ID") or request.remote_addr
 
         try:
