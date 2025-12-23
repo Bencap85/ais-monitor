@@ -6,11 +6,6 @@ import React from 'react';
 import TileTracker from '../TileTracker.jsx';
 import CenterLogger from '../CenterLogger.jsx';
 import ShipSocketListener from './ShipSocketListener.jsx';
-import Topbar from '../topbar/Topbar.jsx';
-import DrawControl from '../DrawControl.jsx';
-import FlyToController from '../FlyToController.jsx';
-import Loading from '../Loading.jsx';
-import ShipPopup from '../../popup/ShipPopup.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedShip } from '../../slice/selectedShipSlice.js';
 import { setShips } from '../../slice/aisShipsSlice.js';
@@ -38,7 +33,7 @@ export default function AisMap({ mapContext, setIsLoading }) {
     const [mapReady, setMapReady] = useState(false);
     const selectedShip = useSelector(state => state.selectedShip);
     const visibleTilesRef = useRef([]);
-    const startingViewportBounds = useRef(mapContext.current?.viewportBoundsGeojson?.geometry?.coordinates);
+    const startingViewportBounds = useRef(mapContext.current.viewportBoundsGeojson.geometry.coordinates);
 
     const dispatch = useDispatch();
 

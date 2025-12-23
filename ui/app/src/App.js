@@ -1,215 +1,45 @@
 import './App.css';
-import MapView from './map/MapView.jsx';
 import Sidebar from './sidebar/Sidebar.jsx';
-import Topbar from './map/topbar/Topbar.jsx';
-import CreateZoneModal from './CreateZoneModal.jsx';
-import ShipPopup from './popup/ShipPopup.jsx';
 import AisMap from './map/ais/AisMap.jsx';
+import AisShipPopup from './popup/AisShipPopup.jsx';
 import { useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setSelectedShip } from './slice/selectedShipSlice.js';
 import { setCurrentMode } from './slice/currentModeSlice.js';
-import { DATA_SOURCES, PIPELINE_STAGES, shipTypeToColor } from "./constants/constants.js";
+import { setSelectedShip } from './slice/selectedShipSlice.js';
+import { DATA_SOURCES } from './constants/constants.js';
+
 
 function App() {
 
-  let visibleTiles = [];
-  const [showCreateZoneModal, setShowCreateZoneModal] = useState(false);
-  const [newBoundaryGeojson, setNewBoundaryGeojson] = useState(null);
-  const [flyToLocation, setFlyToLocation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [pipelineStatus, setPipelineStatus] = useState(null);
 
+  const dispatch = useDispatch();
+  dispatch(setCurrentMode(DATA_SOURCES.AIS));
+
+  // Initialize map context/bounds
   const mapContext = useRef({
     lat: 36.94,
     lng: -76.3,
     zoom: 10,
-    viewportBoundsGeojson: null
+    viewportBoundsGeojson: {
+      geometry: { "type": "Polygon", "coordinates": [[[-76.89194580385873, 36.608913667193676], [-76.89194580385873, 37.26968150969715], [-75.66971679995248, 37.26968150969715], [-75.66971679995248, 36.608913667193676], [-76.89194580385873, 36.608913667193676]]] }
+    }
   });
 
-  const REPOSITORY_SERVICE_BASE_URL = process.env.REACT_APP_REPOSITORY_SERVICE_BASE_URL;
-
-  // Selected Ship from redux store
-  const dispatch = useDispatch();
+  // Fetch data from redux store
   const selectedShip = useSelector(state => state.selectedShip);
-  console.log("Selected Ship: " + JSON.stringify(selectedShip));
   const currentMode = useSelector(state => state.currentMode);
-  
-  const [ships, setShips] = useState([{
-    type: "Cargo",
-    coordinates: {
-      lat: 36.96,
-      lng: -76.36
-    },
-    confidence: 0.89,
-    timestamp: "2025-09-05T11:48:00Z",
-    bbox: [0, 0, 0, 0]
-  } ]);
-
-
-  const [zones, setZones] = useState([
-    {
-      name: "Zone Alpha",
-      ships: ships,
-      shipGeojson: ""
-    }
-  ]);
-  
-
-  const toggleShowCreateZoneModal = () => {
-    setShowCreateZoneModal(!showCreateZoneModal);
-  }
-
-  const handleAddZone = (newZone) => {
-    
-    fetch(`${REPOSITORY_SERVICE_BASE_URL}/detect`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ geojson: newZone.geojson, zoomLevels: newZone.zoomLevels })
-    })
-      .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-      })
-      .then(data => {
-        const pipelineId = data.pipelineId;
-
-        let lastProgress = 0;
-        let pollsWithoutUpdate = 1;
-        const pollLength = 4; // seconds
-        let isFirstPoll = true;
-
-        const pollStatus = () => {
-          fetch(`${REPOSITORY_SERVICE_BASE_URL}/${pipelineId}/status`)
-            .then(res => res.json())
-            .then(status => {
-              console.log(`Stage: ${status?.stage}, Progress: ${status?.progress}`);
-
-              // Progress animation below
-              if (isFirstPoll) {
-                setPipelineStatus({
-                  stage: PIPELINE_STAGES[status.stage],
-                  progress: status.progress
-                });
-                setIsLoading(true);
-                isFirstPoll = false;
-              }
-
-
-              const targetProgress = status.progress;
-              const stage = PIPELINE_STAGES[status.stage];
-
-              if (targetProgress > lastProgress) {
-                const steps = 10 * pollsWithoutUpdate;
-                const stepSize = (targetProgress - lastProgress) / steps;
-                let stepCount = 0;
-                let currentProgress = lastProgress;
-
-                const interval = setInterval(() => {
-                  stepCount++;
-                  currentProgress += stepSize;
-
-                  setPipelineStatus({
-                    stage: PIPELINE_STAGES[status.stage],
-                    progress: Math.min(currentProgress, targetProgress)
-                  });
-
-                  if (stepCount >= steps) {
-                    clearInterval(interval);
-                    setPipelineStatus({
-                      stage: stage,
-                      progress: targetProgress
-                    });
-                  }
-                }, (pollLength * 1000) / steps);
-
-                pollsWithoutUpdate = 1;
-              } else {
-                pollsWithoutUpdate++;
-                console.log(`No progress update. Cycles without update: ${pollsWithoutUpdate}`);
-              }
-
-              lastProgress = targetProgress;
-              // End progress animation
-
-              if (status.stage === "PipelineStage.COMPLETED") {
-                fetch(`${REPOSITORY_SERVICE_BASE_URL}/${pipelineId}/result`)
-                  .then(res => res.json())
-                  .then(result => {
-                    const features = result.features;
-                    const ships = features.map(feature => ({
-                      id: feature.properties.id,
-                      type: feature.properties.type,
-                      confidence: feature.properties.confidence,
-                      coordinates: feature.properties.coordinates,
-                      estimatedLength: feature.properties.estimatedLength,
-                      bbox: feature.geometry.coordinates
-                    }));
-
-                    newZone.ships = ships;
-                    newZone.shipPositions = features;
-                    setZones([...zones, newZone]);
-                    setIsLoading(false);
-                  });
-              } else {
-                // Continue polling after 1 second
-                setTimeout(pollStatus, pollLength*1000);
-              }
-            })
-            .catch(err => {
-              console.error('Error polling status:', err);
-              setIsLoading(false);
-            });
-        };
-
-        pollStatus(); // Start polling
-
-      })
-      .catch(error => {
-        console.error('Error during detection:', error);
-        setIsLoading(false);
-      });
-
-  }
 
   return (
     <div className="App">
-      <Sidebar handleDetectShips={() => { }}
-               setFlyToLocation={setFlyToLocation}
-               zones={zones} 
-               isLoading={isLoading}
-               />
-      {selectedShip && <ShipPopup ship={selectedShip} />}
-      {
-        currentMode === DATA_SOURCES.AIS ? (
-          <AisMap 
-            mapContext={mapContext}
-            setIsLoading={setIsLoading} />
-        ) : (
-          <>
-            <MapView
-              ships={ships}
-              toggleShowCreateZoneModal={toggleShowCreateZoneModal}
-              setNewBoundaryGeojson={setNewBoundaryGeojson}
-              zones={zones}
-              flyToLocation={flyToLocation}
-              isLoading={isLoading}
-              pipelineStatus={pipelineStatus}
-              mapContext={mapContext}
-            />
-            {newBoundaryGeojson !== null && (
-              <CreateZoneModal
-                handleAddZone={handleAddZone}
-                newBoundaryGeojson={newBoundaryGeojson}
-                setNewBoundaryGeojson={setNewBoundaryGeojson}
-                numZones={zones.length}
-              />
-            )}
-          </>
-        )
-      }
+      <Sidebar
+        isLoading={isLoading}
+      />
+      {selectedShip && <AisShipPopup ship={selectedShip} />}
+      <AisMap
+        mapContext={mapContext}
+        setIsLoading={setIsLoading} />
+
     </div>
   );
 }

@@ -9,7 +9,7 @@ export default function SidebarHeader() {
     const currentMode = useSelector(state => state.currentMode);
 
     const satelliteTab = {
-        name: "Satellite Imagery",
+        name: "Satellite (deprecated)",
         dataSource: DATA_SOURCES.SATELLITE
     }
 
@@ -18,7 +18,7 @@ export default function SidebarHeader() {
         dataSource: DATA_SOURCES.AIS
     }
 
-    const tabs = [ satelliteTab, aisTab ];
+    const tabs = [ aisTab, satelliteTab ];
 
     for (const tab of tabs) {
         console.log(JSON.stringify(tab));
