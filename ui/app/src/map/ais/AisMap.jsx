@@ -6,6 +6,7 @@ import React from 'react';
 import TileTracker from '../TileTracker.jsx';
 import CenterLogger from '../CenterLogger.jsx';
 import ShipSocketListener from './ShipSocketListener.jsx';
+import ShipMarkerDrawer from './ShipMarkerDrawer.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedShip } from '../../slice/selectedShipSlice.js';
 import { setShips } from '../../slice/aisShipsSlice.js';
@@ -227,6 +228,9 @@ export default function AisMap({ mapContext, setIsLoading }) {
                         visibleTilesRef={visibleTilesRef} 
                         handleAisShipClick={handleAisShipClick}
                         mapContext={mapContext}
+                    />
+                    <ShipMarkerDrawer 
+                        handleAisShipClick={handleAisShipClick}
                     />
 
                 </MapContainer>

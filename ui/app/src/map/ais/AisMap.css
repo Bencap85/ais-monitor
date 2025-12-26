@@ -62,7 +62,7 @@
   cursor: default;
 }
 
-.custom-cluster {
+.leaflet-marker-icon.custom-cluster {
   display: flex;
   color: var(--text-color-dark);
   justify-content: center;
@@ -92,7 +92,6 @@
   background-color: rgba(255, 0, 0, 0.348);
 }
 
-
 .flash-white {
   animation: flashWhite 0.2s 3; /* 0.2s per flash, repeat 3 times */
 }
@@ -101,5 +100,4 @@
   0%, 100% { fill: var(--ship-color); }  /* original color */
   50% { fill: black; }                   /* flash white */
 }
-
 
