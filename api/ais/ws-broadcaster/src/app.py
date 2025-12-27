@@ -1,10 +1,12 @@
 import eventlet
 eventlet.monkey_patch()
 import math
+import json
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, current_app
 from flask_socketio import SocketIO, join_room, leave_room
 from tile_utils import get_intersecting_tiles
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,50 +30,11 @@ def get_tile_id(lat, lon, zoom=6):
     x_tile = int((lon + 180.0) / 360.0 * n)
     y_tile = int((1.0 - math.log(math.tan(lat_rad) + 1 / math.cos(lat_rad)) / math.pi) / 2.0 * n)
     return f"{zoom}_{x_tile}_{y_tile}"
-
-@app.route("/api/relevant-rooms", methods=["POST"])
-def get_rooms_for_bounds():
-    """
-    Get the rooms the client needs to connect to in order to receive AIS updates for a
-    particular region. Probably going to move this logic client-side.
-
-    Parameters:
-        {
-            geojson: {
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                        [
-                            [-76.37221,36.96841],
-                            [-76.37221,36.981301],
-                            [-76.354526,36.981301],
-                            [-76.354526,36.96841],
-                            [-76.37221,36.96841]
-                        ]
-                    ]
-                }
-            }
-        }
-
-    Returns:
-        List with room ids:
-        [
-            "1_1_1",
-            "1_1_2",
-            "1_1_3"
-        ]
-
-
-    """
-    try:
-        geojson = request.get_json().get("geojson")
-        room_ids = get_intersecting_tiles(geojson, zoom=6)
-        return jsonify(room_ids)
-    except Exception as e:
-        logger.error(f"Error in /api/relevant-rooms: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+    
+@app.route("/api/metrics", methods=["GET"])
+def get_metrics():
+    metrics = current_app.consumer.get_metrics()
+    return metrics
 
 @socketio.on("connect")
 def handle_connect():

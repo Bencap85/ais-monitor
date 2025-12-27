@@ -1,7 +1,7 @@
 import psycopg2
 import psycopg2.extras
 from psycopg2 import OperationalError, pool
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, current_app
 import threading
 import os
 import json
@@ -93,6 +93,11 @@ def create_api() -> Flask:
     
         finally:
             pg_pool.putconn(connection)
+
+    @app.route("/api/metrics", methods=["GET"])
+    def get_metrics():
+        metrics = current_app.consumer.get_metrics()
+        return metrics
 
     return app
     

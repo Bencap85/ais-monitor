@@ -94,6 +94,9 @@ class AisConsumer():
                 Entries=entries
             )
 
+    def get_metrics(self) -> dict:
+        return self.stats
+
     def run(self):
         self.stats["start_time"] = datetime.now(timezone.utc)
         while True:

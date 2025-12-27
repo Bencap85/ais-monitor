@@ -16,15 +16,6 @@ logging.basicConfig(
 
 settings = Settings()
 
-def start_consumer() -> None:
-    connection = connect_to_database()
-    if connection is None:
-        logger.error("Error connecting to database")
-        return
-    
-    consumer = AisConsumer(connection)
-    consumer.run()
-
 def start_history_pruner() -> None:
     def prune_job()-> None:
         PRUNE_QUERY_NAME = 'prune_ais_ships_history'
@@ -58,7 +49,14 @@ def start_history_pruner() -> None:
 
 def main():
 
-    consumer_thread = threading.Thread(target=start_consumer, daemon=True)
+    connection = connect_to_database()
+    if connection is None:
+        logger.error("Error connecting to database")
+        return
+    
+    consumer = AisConsumer(connection)
+
+    consumer_thread = threading.Thread(target=consumer.run, daemon=True)
     consumer_thread.start()
     logger.info("Consumer thread started")
 
@@ -66,8 +64,9 @@ def main():
     history_pruner_thread.start()
     logger.info("History pruner thread started")
 
-    print("Starting HTTP server...")
+    logger.info("Starting HTTP server...")
     api = create_api()
+    api.consumer = consumer
     api.run(host='0.0.0.0', port=8080)
 
 if __name__ == "__main__":

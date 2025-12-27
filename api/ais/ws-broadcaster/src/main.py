@@ -16,9 +16,12 @@ if __name__ == "__main__":
     consumer = AisConsumer()
     socketio.start_background_task(consumer.run)
 
+    app.consumer = consumer
+
     logger.info("""
           *******************************
           *    HTTP + WebSocket Server  *
           *******************************
           """)
     socketio.run(app, host="0.0.0.0", port=settings.broadcaster_port)
+    
