@@ -1,0 +1,43 @@
+on:
+  push:
+    branches:
+      - deployment
+  workflow_dispatch:
+    inputs:
+      deploy_to_ec2:
+        description: "Deploy to EC2?"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::<account>:role/github-actions-ecr
+          aws-region: us-east-2
+
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password --region us-east-2 \
+            | docker login --username AWS --password-stdin <account>.dkr.ecr.us-east-2.amazonaws.com
+
+      - name: Build and push images
+        run: |
+          docker build -t api-service1 ./api/service1
+          docker tag api-service1:latest <account>.dkr.ecr.us-east-2.amazonaws.com/api-service1:latest
+          docker push <account>.dkr.ecr.us-east-2.amazonaws.com/api-service1:latest
+
+      - name: Deploy to EC2
+        if: github.event.inputs.deploy_to_ec2 == 'true'
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@<EC2_IP> \
+            "cd /opt/ais && docker compose pull && docker compose up -d"
