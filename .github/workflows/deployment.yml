@@ -30,13 +30,6 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::822491881272:role/github-deployment-pipeline
           aws-region: us-east-2
-        
-      - name: Print OIDC token claims
-        run: |
-          echo "OIDC token claims:"
-          curl -s "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
-          -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" | jq .
-
 
       - name: Login to ECR
         run: |
