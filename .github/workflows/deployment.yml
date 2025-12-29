@@ -8,16 +8,6 @@ on:
   push:
     branches:
       - deployment
-  workflow_dispatch:
-    inputs:
-      deploy_to_ec2:
-        description: "Deploy to EC2?"
-        required: true
-        default: "false"
-        type: choice
-        options:
-          - "true"
-          - "false"
 
 jobs:
   backend:
