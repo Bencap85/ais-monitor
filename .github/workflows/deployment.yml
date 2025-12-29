@@ -50,8 +50,14 @@ jobs:
           docker tag ais-ws-broadcaster:latest 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ws-broadcaster:latest
           docker push 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ws-broadcaster:latest
 
+      - name: Add SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key.pem
+          chmod 600 ~/.ssh/ec2-key.pem
+
       - name: Deploy to EC2
         if: github.event.inputs.deploy_to_ec2 == 'true'
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@<EC2_IP> \
+          ssh -i ~/.ssh/ec2-key.pem ec2-user@3.134.93.191 \
             "cd /opt/ais && docker compose pull && docker compose up -d"
