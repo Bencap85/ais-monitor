@@ -34,13 +34,13 @@ jobs:
       - name: Login to ECR
         run: |
           aws ecr get-login-password --region us-east-2 \
-            | docker login --username AWS --password-stdin <account>.dkr.ecr.us-east-2.amazonaws.com
+            | docker login --username AWS --password-stdin 822491881272.dkr.ecr.us-east-2.amazonaws.com
 
       - name: Build and push images
         run: |
           docker build -t api-service1 ./api/service1
-          docker tag api-service1:latest <account>.dkr.ecr.us-east-2.amazonaws.com/api-service1:latest
-          docker push <account>.dkr.ecr.us-east-2.amazonaws.com/api-service1:latest
+          docker tag api-service1:latest 822491881272.dkr.ecr.us-east-2.amazonaws.com/api-service1:latest
+          docker push 822491881272.dkr.ecr.us-east-2.amazonaws.com/api-service1:latest
 
       - name: Deploy to EC2
         if: github.event.inputs.deploy_to_ec2 == 'true'
