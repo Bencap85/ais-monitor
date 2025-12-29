@@ -53,4 +53,5 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/ec2-key.pem ec2-user@3.134.93.191 \
-            "cd /opt/ais && docker compose pull && docker compose up -d"
+          "mkdir -p /opt/ais && cd /opt/ais && docker compose pull && docker compose up -d"
+
