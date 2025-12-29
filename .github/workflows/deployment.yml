@@ -46,6 +46,10 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key.pem
           chmod 600 ~/.ssh/ec2-key.pem
 
+      - name: Add EC2 host to known_hosts
+        run: |
+          ssh-keyscan -H 3.134.93.191 >> ~/.ssh/known_hosts
+
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/ec2-key.pem ec2-user@3.134.93.191 \
