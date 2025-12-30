@@ -19,9 +19,9 @@ load_params() {
   done <<< "$params"
 }
 
-load_params "/ais/ws-broadcaster/"
-load_params "/ais/repository/"
-load_params "/ais/ingestor/"
+load_params "/ais-ws-broadcaster/"
+load_params "/ais-repository/"
+load_params "/ais-ingestor/"
 
 # Show what was exported
 echo "Loaded environment variables:"
