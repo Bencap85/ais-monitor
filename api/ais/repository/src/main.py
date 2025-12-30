@@ -40,7 +40,7 @@ def start_history_pruner() -> None:
             connection.close()
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(prune_job, "interval", minutes=settings.history_prune_query_interval)
+    scheduler.add_job(prune_job, "interval", minutes=int(settings.history_prune_query_interval))
     scheduler.start()
 
     logger.info("History pruner scheduler started")
