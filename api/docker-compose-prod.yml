@@ -1,0 +1,24 @@
+services:
+
+  ais-ws-broadcaster:
+    image: 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ws-broadcaster:latest
+    container_name: ais_ws_broadcaster
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  ais-repository:
+    image: 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-repository:latest
+    container_name: ais_repository
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ais-ws-broadcaster
+    restart: unless-stopped
+
+  ais-ingestor:
+    image: 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ingestor:latest
+    container_name: ais_ingestor
+    depends_on:
+      - ais-repository
+    restart: unless-stopped
