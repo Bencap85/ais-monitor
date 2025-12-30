@@ -17,14 +17,15 @@ settings = Settings()
 POSITION_REPORT_IDS = {1, 2, 3}
 STATIC_DATA_IDS = {5}
 
+kwargs = {"region_name": settings.aws_region_name}
+if settings.aws_url:  # only set in LocalStack
+    kwargs["endpoint_url"] = settings.aws_url
+
 class AisConsumer():
+
     def __init__(self, conn: connection):
         self.conn = conn
-        self.sqs_client = boto3.client(
-            "sqs",
-            region_name=settings.aws_region_name,
-            endpoint_url=settings.aws_url
-        )
+        self.sqs_client = boto3.client("sqs", **kwargs)
         self.queue_url = settings.sqs_url                          
 
         self.batch_ships = {}

@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     ws_retry_seconds: int = 2
 
     # AWS
-    aws_url: str
+    aws_url: str | None = None
     aws_region_name: str = "us-east-1"
     sns_topic_arn: str = "arn:aws:sns:us-east-1:000000000000:ais_message"
 

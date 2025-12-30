@@ -17,6 +17,10 @@ settings = Settings()
 
 ACCEPTED_MESSAGE_TYPES = { "PositionReport", "ShipStaticData" }
 
+kwargs = { "region_name": settings.aws_region_name }
+if settings.aws_url:
+    kwargs["endpoint_url"] = settings.aws_url
+
 class AisIngestor:
 
     def _connect_to_ws(self):
@@ -31,10 +35,7 @@ class AisIngestor:
     
     def __init__(self):
         self.ws_connection = self._connect_to_ws()
-        self.sns_client = boto3.client(
-            "sns", 
-            region_name=settings.aws_region_name,
-            endpoint_url=settings.aws_url)
+        self.sns_client = boto3.client("sns", **kwargs)
         self.topic_arn = settings.sns_topic_arn
 
         self.buffer = []

@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     broadcaster_port: int = 5000
 
     # AWS
-    aws_url: str
+    aws_url: str | None = None
     aws_region_name: str = "us-east-1"
     sqs_url: str = "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/ais_message_group"
 
