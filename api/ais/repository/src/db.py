@@ -21,7 +21,7 @@ def connect_to_database() -> connection:
             user=settings.db_user,
             password=settings.db_password,
             host=settings.db_host,
-            port=settings.db_port     
+            port=int(settings.db_port)     
         )
         logger.info("Connected to database")
         return connection

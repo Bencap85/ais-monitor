@@ -1,12 +1,23 @@
 services:
 
+  postgis-db:
+    image: postgis/postgis
+    container_name: postgis_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ais_data
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+      - ./db/data:/data
+    restart: unless-stopped
+
   ais-ws-broadcaster:
     image: 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ws-broadcaster:latest
     container_name: ais_ws_broadcaster
     env_file:
       - .env
-    ports:
-      - "5000:5000"
     restart: unless-stopped
 
   ais-repository:
@@ -14,10 +25,8 @@ services:
     container_name: ais_repository
     env_file:
       - .env
-    ports:
-      - "8080:8080"
     depends_on:
-      - ais-ws-broadcaster
+      - postgis-db
     restart: unless-stopped
 
   ais-ingestor:
@@ -28,3 +37,6 @@ services:
     depends_on:
       - ais-repository
     restart: unless-stopped
+
+volumes:
+  pgdata:
