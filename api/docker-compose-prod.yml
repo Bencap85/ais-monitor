@@ -3,10 +3,8 @@ services:
   ais-ws-broadcaster:
     image: 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ws-broadcaster:latest
     container_name: ais_ws_broadcaster
-    environment:
-      WS_API_KEY: ${WS_API_KEY}
-      AWS_REGION: ${AWS_REGION}
-      SQS_URL: ${SQS_URL}
+    env_file:
+      - .env
     ports:
       - "5000:5000"
     restart: unless-stopped
@@ -14,12 +12,8 @@ services:
   ais-repository:
     image: 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-repository:latest
     container_name: ais_repository
-    environment: 
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
+    env_file:
+      - .env
     ports:
       - "8080:8080"
     depends_on:
@@ -29,11 +23,8 @@ services:
   ais-ingestor:
     image: 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ingestor:latest
     container_name: ais_ingestor
-    environment: 
-      AIS_MESSAGE_BATCH_SIZE: ${AIS_MESSAGE_BATCH_SIZE}
-      WS_API_KEY: ${WS_API_KEY}
-      AWS_REGION: ${AWS_REGION}
-      SNS_TOPIC_ARN: ${SNS_TOPIC_ARN}
+    env_file:
+      - .env
     depends_on:
       - ais-repository
     restart: unless-stopped
