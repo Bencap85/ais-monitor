@@ -50,6 +50,11 @@ jobs:
         run: |
           ssh-keyscan -H 3.134.93.191 >> ~/.ssh/known_hosts
 
+      - name: Upload docker compose and scripts to EC2
+        run: |
+          scp -i ~/.ssh/ec2-key.pem ais/load-envs.sh ec2-user@3.134.93.191:/home/ec2-user/ais/load-envs.sh
+          scp -i ~/.ssh/ec2-key.pem ais/docker-compose-prod.yml ec2-user@3.134.93.191:/home/ec2-user/ais/docker-compose.yml
+ 
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/ec2-key.pem ec2-user@3.134.93.191 \
