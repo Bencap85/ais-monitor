@@ -38,7 +38,7 @@ class AisIngestor:
         self.topic_arn = settings.sns_topic_arn
 
         self.buffer = []
-        self.batch_size = settings.ais_message_batch_size
+        self.batch_size = int(settings.ais_message_batch_size)
         
         self.stats = {
             "message_count": 0,

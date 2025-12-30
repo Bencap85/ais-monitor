@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
-    ais_message_batch_size: int
+    ais_message_batch_size: str
     
     # Websocket API
     ws_api_key: str
