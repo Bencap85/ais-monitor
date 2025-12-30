@@ -58,6 +58,6 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/ec2-key.pem ec2-user@3.134.93.191 \
-          "mkdir -p ~/ais && cd ~/ais && docker-compose pull && docker-compose up -d"
+          "mkdir -p ~/ais && cd ~/ais && ./load-envs.sh && docker-compose pull && docker-compose up -d"
 
 
