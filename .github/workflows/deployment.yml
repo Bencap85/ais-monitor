@@ -28,15 +28,15 @@ jobs:
 
       - name: Build and push images
         run: |
-          docker build -f Dockerfile.prod -t ais-ingestor ./api/ais/ingestor
+          docker build -f ./api/ais/ingestor/Dockerfile.prod -t ais-ingestor ./api/ais/ingestor
           docker tag ais-ingestor:latest 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ingestor:latest
           docker push 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ingestor:latest
 
-          docker build -f Dockerfile.prod -t ais-repository ./api/ais/repository
+          docker build -f ./api/ais/repository/Dockerfile.prod -t ais-repository ./api/ais/repository
           docker tag ais-repository:latest 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-repository:latest
           docker push 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-repository:latest
 
-          docker build -f Dockerfile.prod -t ais-ws-broadcaster ./api/ais/ws-broadcaster
+          docker build -f ./api/ais/ws-broadcaster/Dockerfile.prod -t ais-ws-broadcaster ./api/ais/ws-broadcaster
           docker tag ais-ws-broadcaster:latest 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ws-broadcaster:latest
           docker push 822491881272.dkr.ecr.us-east-2.amazonaws.com/ais-ws-broadcaster:latest
 
