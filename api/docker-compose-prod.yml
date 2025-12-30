@@ -6,7 +6,7 @@ services:
     environment:
       WS_API_KEY: ${WS_API_KEY}
       AWS_REGION: ${AWS_REGION}
-      SNS_TOPIC_ARN: ${SNS_TOPIC_ARN}
+      SQS_URL: ${SQS_URL}
     ports:
       - "5000:5000"
     restart: unless-stopped
@@ -33,7 +33,7 @@ services:
       AIS_MESSAGE_BATCH_SIZE: ${AIS_MESSAGE_BATCH_SIZE}
       WS_API_KEY: ${WS_API_KEY}
       AWS_REGION: ${AWS_REGION}
-      SQS_URL: ${SQS_URL}
+      SNS_TOPIC_ARN: ${SNS_TOPIC_ARN}
     depends_on:
       - ais-repository
     restart: unless-stopped
