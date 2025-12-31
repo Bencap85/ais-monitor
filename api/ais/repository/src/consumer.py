@@ -26,15 +26,17 @@ class AisConsumer():
     def __init__(self, conn: connection):
         self.conn = conn
         self.sqs_client = boto3.client("sqs", **kwargs)
-        self.queue_url = settings.sqs_url                          
+        self.queue_url = settings.repository_queue_url                          
 
         self.batch_ships = {}
         self.batch_history = []
         self.batch_static = {}
 
         self.stats = {
-            "message_count": 0,
-            "messages_per_second": 0,
+            "ais_message_count": 0,
+            "sqs_message_count": 0,
+            "ais_messages_per_second": 0,
+            "sqs_messages_per_second": 0,
             "start_time": None
         }
 
@@ -67,17 +69,7 @@ class AisConsumer():
         else:
             logger.info(f"Unsupported message type! Received {message_type}")
 
-        self.stats["message_count"] += 1
-        if self.stats["message_count"] % 1000 == 0:
-
-            # Calculate messages/second
-            elapsed_time = datetime.now(timezone.utc) - self.stats["start_time"]
-            elapsed_seconds = elapsed_time.total_seconds()
-            messages_per_second = self.stats["message_count"] / elapsed_seconds
-            
-            self.stats["messages_per_second"] = messages_per_second
-            logger.info(str(self.stats))
-
+        if self.stats["ais_message_count"] % 1000 == 0:
             # Flush update queues
             self._flush_ships()
         
@@ -114,6 +106,16 @@ class AisConsumer():
                     continue
 
                 for msg in messages:
+
+                    self.stats["sqs_message_count"] += 1
+                    if self.stats["sqs_message_count"] % 1000 == 0:
+                        # Calculate sqs messages/second
+                        elapsed_time = datetime.now(timezone.utc) - self.stats["start_time"]
+                        elapsed_seconds = elapsed_time.total_seconds()
+                        sqs_messages_per_second = self.stats["sqs_message_count"] / elapsed_seconds
+                        
+                        self.stats["sqs_messages_per_second"] = sqs_messages_per_second
+                            
                     body = msg["Body"]
 
                     # SNS wraps the payload in its own envelope
@@ -122,6 +124,18 @@ class AisConsumer():
 
                     # Process each AIS message individually
                     for ais_message in batch_payload:
+                        self.stats["ais_message_count"] += 1
+
+                        if self.stats["ais_message_count"] % 1000 == 0:
+
+                            # Calculate messages/second
+                            elapsed_time = datetime.now(timezone.utc) - self.stats["start_time"]
+                            elapsed_seconds = elapsed_time.total_seconds()
+                            ais_messages_per_second = self.stats["ais_message_count"] / elapsed_seconds
+                            
+                            self.stats["ais_messages_per_second"] = ais_messages_per_second
+                            logger.info(str(self.stats))
+
                         self._handle_message(ais_message)
 
                 self._delete_messages(messages)

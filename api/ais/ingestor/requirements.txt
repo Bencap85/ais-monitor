@@ -2,3 +2,5 @@ websockets
 websocket-client
 pydantic-settings
 boto3
+flask
+flask-cors

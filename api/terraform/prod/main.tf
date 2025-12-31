@@ -9,18 +9,52 @@ resource "aws_sns_topic" "ais_message" {
   name = "ais_message"
 }
 
-# SQS Queue (Kafka consumer group equivalent)
-resource "aws_sqs_queue" "ais_message_group" {
-  name = "ais_message_group"
+# Repository queue
+resource "aws_sqs_queue" "ais_repository_queue" {
+  name = "ais_repository_queue"
 
-  policy = jsonencode({
+  # Example sensible defaults; tune as needed
+  visibility_timeout_seconds = 60
+  message_retention_seconds  = 1209600  # 14 days
+  receive_wait_time_seconds  = 20       # long polling
+}
+
+# Broadcaster queue
+resource "aws_sqs_queue" "ais_broadcaster_queue" {
+  name = "ais_broadcaster_queue"
+
+  visibility_timeout_seconds = 60
+  message_retention_seconds  = 1209600
+  receive_wait_time_seconds  = 20
+}
+
+# SQS policy helper (one per queue) to allow SNS to send messages
+locals {
+  repo_queue_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Effect = "Allow"
         Principal = "*"
         Action = "sqs:SendMessage"
-        Resource = "arn:aws:sqs:us-east-2:${data.aws_caller_identity.current.account_id}:ais_message_group"
+        Resource = aws_sqs_queue.ais_repository_queue.arn
+        Condition = {
+          ArnEquals = {
+            "aws:SourceArn" = aws_sns_topic.ais_message.arn
+          }
+        }
+      }
+    ]
+  })
+
+  broadcaster_queue_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = "*"
+        Action = "sqs:SendMessage"
+        Resource = aws_sqs_queue.ais_broadcaster_queue.arn
         Condition = {
           ArnEquals = {
             "aws:SourceArn" = aws_sns_topic.ais_message.arn
@@ -31,11 +65,28 @@ resource "aws_sqs_queue" "ais_message_group" {
   })
 }
 
-# Subscription: wire queue to topic
-resource "aws_sns_topic_subscription" "ais_message_sub" {
+# Attach policies
+resource "aws_sqs_queue_policy" "repo_policy" {
+  queue_url = aws_sqs_queue.ais_repository_queue.id
+  policy    = local.repo_queue_policy
+}
+
+resource "aws_sqs_queue_policy" "broadcaster_policy" {
+  queue_url = aws_sqs_queue.ais_broadcaster_queue.id
+  policy    = local.broadcaster_queue_policy
+}
+
+# Subscriptions: wire both queues to the topic
+resource "aws_sns_topic_subscription" "ais_repo_sub" {
   topic_arn = aws_sns_topic.ais_message.arn
   protocol  = "sqs"
-  endpoint  = aws_sqs_queue.ais_message_group.arn
+  endpoint  = aws_sqs_queue.ais_repository_queue.arn
+}
+
+resource "aws_sns_topic_subscription" "ais_broadcaster_sub" {
+  topic_arn = aws_sns_topic.ais_message.arn
+  protocol  = "sqs"
+  endpoint  = aws_sqs_queue.ais_broadcaster_queue.arn
 }
 
 # Outputs for convenience
@@ -43,6 +94,18 @@ output "topic_arn" {
   value = aws_sns_topic.ais_message.arn
 }
 
-output "queue_url" {
-  value = aws_sqs_queue.ais_message_group.id
+output "repository_queue_url" {
+  value = aws_sqs_queue.ais_repository_queue.id
+}
+
+output "repository_queue_arn" {
+  value = aws_sqs_queue.ais_repository_queue.arn
+}
+
+output "broadcaster_queue_url" {
+  value = aws_sqs_queue.ais_broadcaster_queue.id
+}
+
+output "broadcaster_queue_arn" {
+  value = aws_sqs_queue.ais_broadcaster_queue.arn
 }

@@ -38,6 +38,8 @@ services:
       - ./ais/ingestor/.env
     volumes:
       - ./ais/ingestor/src:/app
+    ports:
+      - "8081:8081"
     container_name: ais_ingestor
     restart: unless-stopped
     depends_on:

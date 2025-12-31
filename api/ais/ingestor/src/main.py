@@ -8,6 +8,7 @@ import threading
 import logging
 from ingestor import AisIngestor
 from settings import Settings
+from server import create_app
 
 
 logger = logging.getLogger(__name__)
@@ -23,8 +24,14 @@ def start_ingestor():
     ingestor.run()
 
 def main():
-    ingestor_thread = threading.Thread(target=start_ingestor, daemon=False)
+    ingestor = AisIngestor()
+    app = create_app()
+    app.producer = ingestor
+
+    ingestor_thread = threading.Thread(target=ingestor.run, daemon=False)
     ingestor_thread.start()
+
+    app.run(host='0.0.0.0', port=8081)
 
 if __name__ == "__main__":
     main()

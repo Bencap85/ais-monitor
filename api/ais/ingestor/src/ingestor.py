@@ -42,9 +42,10 @@ class AisIngestor:
         self.batch_size = int(settings.ais_message_batch_size)
         
         self.stats = {
-            "message_count": 0,
+            "ais_message_count": 0,
+            "sns_message_count": 0,
             "lag_seconds": 0,
-            "messages_per_second": 0,
+            "ais_messages_per_second": 0,
             "start_time": None
         }
 
@@ -58,6 +59,8 @@ class AisIngestor:
                     TopicArn=self.topic_arn,
                     Message=payload
                 )
+
+                self.stats["sns_message_count"] += 1
 
             except Exception as e:
                 logger.error(f"Failed to publish batch {payload}: {e}")
@@ -86,6 +89,8 @@ class AisIngestor:
         msg_time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
         return msg_time.replace(tzinfo=timezone.utc)
 
+    def get_metrics(self) -> dict:
+        return self.stats
 
     def run(self) -> None:
         self.stats["start_time"] = datetime.now(timezone.utc)
@@ -96,8 +101,8 @@ class AisIngestor:
                     message = json.loads(message_json)
                     self._handle_message(message)
 
-                    self.stats["message_count"] += 1
-                    if self.stats["message_count"] % 1000 == 0:
+                    self.stats["ais_message_count"] += 1
+                    if self.stats["ais_message_count"] % 1000 == 0:
 
                         # Calculate lag
                         sent_time = self._convert_metadata_string_to_datetime(message["MetaData"]["time_utc"])
@@ -106,10 +111,10 @@ class AisIngestor:
                         # Calculate messages/second
                         elapsed_time = datetime.now(timezone.utc) - self.stats["start_time"]
                         elapsed_seconds = elapsed_time.total_seconds()
-                        messages_per_second = self.stats["message_count"] / elapsed_seconds
+                        ais_messages_per_second = self.stats["ais_message_count"] / elapsed_seconds
                         
                         self.stats["lag_seconds"] = lag.total_seconds()
-                        self.stats["messages_per_second"] = messages_per_second
+                        self.stats["ais_messages_per_second"] = ais_messages_per_second
 
                         logger.info(str(self.stats))
 

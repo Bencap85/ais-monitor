@@ -18,6 +18,8 @@ services:
     container_name: ais_ws_broadcaster
     env_file:
       - .env
+    ports:
+      - "5000:5000"
     restart: unless-stopped
 
   ais-repository:
@@ -25,6 +27,8 @@ services:
     container_name: ais_repository
     env_file:
       - .env
+    ports:
+      - "8080:8080"
     depends_on:
       - postgis-db
     restart: unless-stopped
@@ -34,6 +38,8 @@ services:
     container_name: ais_ingestor
     env_file:
       - .env
+    ports:
+      - "8081:8081"
     depends_on:
       - ais-repository
     restart: unless-stopped
