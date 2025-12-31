@@ -58,6 +58,6 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/ec2-key.pem ec2-user@3.134.93.191 \
-          "mkdir -p ~/ais && cd ~/ais && sudo chmod +x generate-env-file.sh && ./generate-env-file.sh && docker-compose pull && docker-compose up -d"
+          "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 822491881272.dkr.ecr.us-east-2.amazonaws.com && mkdir -p ~/ais && cd ~/ais && sudo chmod +x generate-env-file.sh && ./generate-env-file.sh && docker-compose pull && docker-compose up -d"
 
 
