@@ -48,24 +48,24 @@ class AisConsumer():
         self.batch_static = {}
 
     def _handle_message(self, message_data: Dict) -> None:
-        if message_data is None:
-            logger.info("Received empty message")
-            return
+        # if message_data is None:
+        #     logger.info("Received empty message")
+        #     return
         
-        ship_data = message_data
+        # ship_data = message_data
 
-        message_type = ship_data['MessageID']
+        # message_type = ship_data['MessageID']
 
-        # Add data to batch as determined by message type
-        if message_type in STATIC_DATA_IDS:
-            self.batch_static[ship_data['UserID']] = ship_data
+        # # Add data to batch as determined by message type
+        # if message_type in STATIC_DATA_IDS:
+        #     self.batch_static[ship_data['UserID']] = ship_data
 
-        elif message_type in POSITION_REPORT_IDS:
-            self.batch_ships[ship_data['UserID']] = ship_data
-            self.batch_history.append(ship_data)
+        # elif message_type in POSITION_REPORT_IDS:
+        #     self.batch_ships[ship_data['UserID']] = ship_data
+        #     self.batch_history.append(ship_data)
 
-        else:
-            logger.info(f"Unsupported message type! Received {message_type}")
+        # else:
+        #     logger.info(f"Unsupported message type! Received {message_type}")
 
         self.stats["message_count"] += 1
         if self.stats["message_count"] % 1000 == 0:
@@ -79,7 +79,7 @@ class AisConsumer():
             logger.info(str(self.stats))
 
             # Flush update queues
-            self._flush_ships()
+            # self._flush_ships()
         
     def _delete_messages(self, messages: list) -> None:
         entries = []
