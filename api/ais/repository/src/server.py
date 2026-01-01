@@ -98,6 +98,10 @@ def create_api() -> Flask:
     def get_metrics():
         metrics = current_app.consumer.get_metrics()
         return metrics
+    
+    @app.route("/health", methods=["GET"])
+    def health_check():
+        return {"status": "ok"}, 200
 
     return app
     

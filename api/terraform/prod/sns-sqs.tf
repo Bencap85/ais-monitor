@@ -1,9 +1,5 @@
 data "aws_caller_identity" "current" {}
 
-provider "aws" {
-  region = "us-east-2"
-}
-
 # SNS Topic (Kafka topic equivalent)
 resource "aws_sns_topic" "ais_message" {
   name = "ais_message"
@@ -15,8 +11,8 @@ resource "aws_sqs_queue" "ais_repository_queue" {
 
   # Example sensible defaults; tune as needed
   visibility_timeout_seconds = 60
-  message_retention_seconds  = 1209600  # 14 days
-  receive_wait_time_seconds  = 20       # long polling
+  message_retention_seconds  = 1209600 # 14 days
+  receive_wait_time_seconds  = 20      # long polling
 }
 
 # Broadcaster queue
@@ -34,10 +30,10 @@ locals {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = "*"
-        Action = "sqs:SendMessage"
-        Resource = aws_sqs_queue.ais_repository_queue.arn
+        Action    = "sqs:SendMessage"
+        Resource  = aws_sqs_queue.ais_repository_queue.arn
         Condition = {
           ArnEquals = {
             "aws:SourceArn" = aws_sns_topic.ais_message.arn
@@ -51,10 +47,10 @@ locals {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = "*"
-        Action = "sqs:SendMessage"
-        Resource = aws_sqs_queue.ais_broadcaster_queue.arn
+        Action    = "sqs:SendMessage"
+        Resource  = aws_sqs_queue.ais_broadcaster_queue.arn
         Condition = {
           ArnEquals = {
             "aws:SourceArn" = aws_sns_topic.ais_message.arn

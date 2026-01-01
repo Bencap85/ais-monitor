@@ -11,4 +11,8 @@ def create_app() -> Flask:
         metrics = current_app.producer.get_metrics()
         return metrics
     
+    @app.route("/health", methods=["GET"])
+    def health_check():
+        return {"status": "ok"}, 200
+    
     return app
