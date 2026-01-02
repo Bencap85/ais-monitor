@@ -190,7 +190,9 @@ resource "aws_lb_listener_rule" "broadcaster_rule" {
   }
 
   condition {
-    path_pattern { values = var.service_paths["broadcaster"] }
+    path_pattern {
+      values = concat(var.service_paths["broadcaster"], var.service_paths["ws"])
+    }
   }
 }
 

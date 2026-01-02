@@ -13,4 +13,5 @@ service_paths = {
   broadcaster = ["/broadcaster/*"]
   repository  = ["/repo/*", "/api/*"]
   ingestor    = ["/ingestor/*"]
+  ws          = ["/socket.io*"]
 }

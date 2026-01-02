@@ -41,6 +41,7 @@ variable "service_paths" {
     broadcaster = ["/broadcaster/*"]
     repository  = ["/repository/*"]
     ingestor    = ["/ingestor/*"]
+    ws          = ["/socket.io*"]
   }
 }
 
