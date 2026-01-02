@@ -10,11 +10,12 @@ import requests
 from flask_cors import CORS
 from db import connect_to_database, find_ships_within_bounds, history_for_mmsi
 from query_manager import QueryManager
-from settings import Settings
+from config import settings
 from coordinate_utils.utils import normalize_coordinates
 
 logger = logging.getLogger(__name__)
-settings = Settings()
+
+BASE_PATH = settings.base_path
     
 def create_api() -> Flask:
 
@@ -29,7 +30,7 @@ def create_api() -> Flask:
 
     query_manager = QueryManager(pg_pool)
 
-    @app.post("/api/ships-within-bounds")
+    @app.post(f"{BASE_PATH}/ships-within-bounds")
     def ships_within_bounds():
         """
         Returns ships detected via AIS within a particular region.
@@ -81,7 +82,7 @@ def create_api() -> Flask:
             logger.error("Request failed:", e)
             return jsonify({"error": "Request failed"}), 500
         
-    @app.route('/api/history/<int:mmsi>', methods=['GET'])
+    @app.route(f'{BASE_PATH}/history/<int:mmsi>', methods=['GET'])
     def get_history(mmsi: int):
         try:
             connection = pg_pool.getconn()
@@ -94,12 +95,12 @@ def create_api() -> Flask:
         finally:
             pg_pool.putconn(connection)
 
-    @app.route("/api/metrics", methods=["GET"])
+    @app.route(f"{BASE_PATH}/metrics", methods=["GET"])
     def get_metrics():
         metrics = current_app.consumer.get_metrics()
         return metrics
     
-    @app.route("/health", methods=["GET"])
+    @app.route(f"{BASE_PATH}/health", methods=["GET"])
     def health_check():
         return {"status": "ok"}, 200
 

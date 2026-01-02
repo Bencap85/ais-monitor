@@ -5,13 +5,12 @@ import math
 import boto3
 import json
 from concurrent.futures import ThreadPoolExecutor
-from settings import Settings
+from config import settings
 from app import socketio
 from tile_utils import get_tile_id
 
 
 logger = logging.getLogger(__name__)
-settings = Settings()
 
 POSITION_REPORT_IDS = [ 1, 2, 3 ]
 

@@ -8,11 +8,11 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 import psycopg2.extras
 from psycopg2.extensions import connection
-from settings import Settings
+from config import settings
 from db import batch_update_history, batch_upsert_ships, batch_upsert_static_data
 
+
 logger = logging.getLogger(__name__)
-settings = Settings()
 
 POSITION_REPORT_IDS = {1, 2, 3}
 STATIC_DATA_IDS = {5}

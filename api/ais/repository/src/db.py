@@ -8,10 +8,10 @@ from psycopg2.extras import execute_values
 import psycopg2.extensions
 from psycopg2.extensions import connection
 from typing import Iterable, Dict, Any, List
-from settings import Settings
+from config import settings
+
 
 logger = logging.getLogger(__name__)
-settings = Settings()
 
 def connect_to_database() -> connection:
     logger.info("Attempting to connect to database...")

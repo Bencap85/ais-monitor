@@ -92,7 +92,7 @@ resource "aws_lb_target_group" "broadcaster_tg" {
   target_type = "instance"
 
   health_check {
-    path                = "/health"
+    path                = "${var.broadcaster_service_base_path}/health"
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30
@@ -115,7 +115,7 @@ resource "aws_lb_target_group" "repository_tg" {
   target_type = "instance"
 
   health_check {
-    path                = "/health"
+    path                = "${var.repository_service_base_path}/health"
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30
@@ -138,7 +138,7 @@ resource "aws_lb_target_group" "ingestor_tg" {
   target_type = "instance"
 
   health_check {
-    path                = "/health"
+    path                = "${var.ingestor_service_base_path}/health"
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30

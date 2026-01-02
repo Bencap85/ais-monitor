@@ -9,11 +9,10 @@ import sys
 import boto3
 from websocket import create_connection
 from websocket._exceptions import WebSocketConnectionClosedException
-from settings import Settings
+from config import settings
 
 
 logger = logging.getLogger(__name__)
-settings = Settings()
 
 ACCEPTED_MESSAGE_TYPES = { "PositionReport", "ShipStaticData" }
 

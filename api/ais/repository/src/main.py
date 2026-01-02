@@ -5,7 +5,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from server import create_api
 from consumer import AisConsumer
 from db import connect_to_database
-from settings import Settings
+from config import settings
 
 
 logger = logging.getLogger(__name__)
@@ -13,8 +13,6 @@ logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
     )
-
-settings = Settings()
 
 def start_history_pruner() -> None:
     def prune_job()-> None:

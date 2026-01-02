@@ -13,7 +13,11 @@ class Settings(BaseSettings):
     aws_url: str | None = None
     aws_region_name: str = "us-east-1"
     sns_topic_arn: str = "arn:aws:sns:us-east-1:000000000000:ais_message"
+
+    base_path: str = "/ingestor/api/v1"
  
     class Config:
         env_file = "../.env"
         env_file_encoding = "utf-8"
+
+settings = Settings()

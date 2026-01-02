@@ -1,5 +1,5 @@
 import logging
-from settings import Settings
+from config import settings
 from app import app, socketio
 from consumer import AisConsumer
 
@@ -10,7 +10,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-settings = Settings()
 
 if __name__ == "__main__":
     consumer = AisConsumer()
@@ -24,4 +23,3 @@ if __name__ == "__main__":
           *******************************
           """)
     socketio.run(app, host="0.0.0.0", port=settings.broadcaster_port)
-    

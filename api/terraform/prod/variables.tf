@@ -35,12 +35,24 @@ variable "service_ports" {
   }
 }
 
-variable "service_paths" {
-  type = map(list(string))
-  default = {
-    broadcaster = ["/broadcaster/*"]
-    repository  = ["/repo/*", "/api/*"]
-    ingestor    = ["/ingestor/*"]
-  }
+service_paths = {
+  broadcaster = ["/broadcaster/*"]
+  repository  = ["/repository/*"]
+  ingestor    = ["/ingestor/*"]
+}
+
+variable "ingestor_service_base_path" {
+    type = string
+    default = "/ingestor/api/v1"
+}
+
+variable "repository_service_base_path" {
+    type = string
+    default = "/repository/api/v1"
+}
+
+variable "broadcaster_service_base_path" {
+    type = string
+    default = "/broadcaster/api/v1"
 }
 

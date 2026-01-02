@@ -7,12 +7,11 @@ import os
 import threading
 import logging
 from ingestor import AisIngestor
-from settings import Settings
+from config import settings
 from server import create_app
 
 
 logger = logging.getLogger(__name__)
-settings = Settings()
 
 logging.basicConfig(
         level=logging.INFO,
