@@ -1,10 +1,10 @@
-name: Build and Deploy UI to S3
+name: Build & Deploy UI
 
 on:
   push:
     branches:
       - main
-    paths: 
+    paths:
       - "ui/**"
       - ".github/workflows/ui-deployment.yml"
 
@@ -29,44 +29,53 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          cd ui
+          npm ci
 
       - name: Build
         env:
           REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
-        run: npm run build
+        run: |
+          cd ui
+          npm run build
 
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v2
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (assume role via OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::822491881272:role/github-deployment-pipeline
           aws-region: us-east-2
 
       - name: Sync build to S3 (index short cache, assets long cache)
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
         run: |
+          cd ui/build
+
           # upload index.html and other non-fingerprinted files with no-cache
-          aws s3 cp build/index.html s3://${{ secrets.S3_BUCKET }}/index.html --acl private --cache-control "no-cache, no-store, must-revalidate"
-          aws s3 cp build/manifest.json s3://${{ secrets.S3_BUCKET }}/manifest.json --acl private --cache-control "no-cache, no-store, must-revalidate" || true
-          aws s3 cp build/favicon.ico s3://${{ secrets.S3_BUCKET }}/favicon.ico --acl private --cache-control "no-cache, no-store, must-revalidate" || true
+          aws s3 cp index.html s3://$S3_BUCKET/index.html --acl private --cache-control "no-cache, no-store, must-revalidate"
+          aws s3 cp manifest.json s3://$S3_BUCKET/manifest.json --acl private --cache-control "no-cache, no-store, must-revalidate" || true
+          aws s3 cp favicon.ico s3://$S3_BUCKET/favicon.ico --acl private --cache-control "no-cache, no-store, must-revalidate" || true
 
           # sync fingerprinted assets with long cache
-          aws s3 sync build/static/ s3://${{ secrets.S3_BUCKET }}/static/ \
-            --acl private \
-            --cache-control "public, max-age=31536000, immutable"
+          if [ -d static ]; then
+            aws s3 sync static/ s3://$S3_BUCKET/static/ \
+              --acl private \
+              --cache-control "public, max-age=31536000, immutable"
+          fi
 
-          # remove files not present locally
-          aws s3 sync build/ s3://${{ secrets.S3_BUCKET }}/ --delete --exclude "static/*" --exclude "index.html" --exclude "manifest.json" --exclude "favicon.ico"
+          # sync remaining files and remove deleted objects
+          aws s3 sync . s3://$S3_BUCKET/ --delete --exclude "static/*" --exclude "index.html" --exclude "manifest.json" --exclude "favicon.ico"
 
-      - name: Create CloudFront invalidation
-        if: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID != '' }}
+      - name: Create CloudFront invalidation (skips if no distribution id)
+        env:
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
         run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+          if [ -n "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
+            echo "Creating CloudFront invalidation for ${CLOUDFRONT_DISTRIBUTION_ID}"
+            aws cloudfront create-invalidation \
+              --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
+              --paths "/*"
+          else
+            echo "CLOUDFRONT_DISTRIBUTION_ID not set; skipping invalidation"
+          fi
