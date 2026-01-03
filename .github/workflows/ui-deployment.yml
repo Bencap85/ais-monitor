@@ -58,7 +58,9 @@ jobs:
         env:
           S3_BUCKET: ${{ secrets.S3_BUCKET }}
         run: |
-          cd ui/build
+          cd ui
+          cd app
+          cd build
 
           # upload index.html and other non-fingerprinted files with no-cache
           aws s3 cp index.html s3://$S3_BUCKET/index.html --acl private --cache-control "no-cache, no-store, must-revalidate"
