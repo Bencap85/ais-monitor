@@ -1,6 +1,6 @@
-import { MapContainer, TileLayer, useMap, Marker, Popup, Polygon, GeoJSON, Tooltip } from 'react-leaflet';
+import { useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setSelectedShip } from '../../slice/selectedShipSlice.js';
 import { selectAllShips, selectShipByMmsi, upsertShips, selectFilteredShips, clearShips, setShips } from '../../slice/aisShipsSlice.js';

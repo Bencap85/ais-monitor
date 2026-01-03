@@ -1,7 +1,5 @@
-import { MapContainer, TileLayer, useMap, Marker, Popup, Polygon, GeoJSON, Tooltip } from 'react-leaflet';
-import L from 'leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import { useState, useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom';
 import React from 'react';
 import TileTracker from '../TileTracker.jsx';
 import CenterLogger from '../CenterLogger.jsx';
@@ -10,10 +8,8 @@ import ShipMarkerDrawer from './ShipMarkerDrawer.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedShip } from '../../slice/selectedShipSlice.js';
 import { setShips } from '../../slice/aisShipsSlice.js';
-import { DATA_SOURCES } from '../../constants/constants.js';
 import './AisMap.css';
 import 'leaflet/dist/leaflet.css';
-const { io } = require("socket.io-client");
 
 const REPOSITORY_SERVICE_BASE_URL = process.env.REACT_APP_REPOSITORY_SERVICE_BASE_URL;
 const MAPBOX_API_KEY = process.env.REACT_APP_MAPBOX_API_KEY;
@@ -30,8 +26,6 @@ export default function AisMap({ mapContext, setIsLoading }) {
     const controllerRef = useRef(null);
     const debounceTimerRef = useRef(null);
 
-    const [shipData, setShipData] = useState([]);
-    const [mapReady, setMapReady] = useState(false);
     const selectedShip = useSelector(state => state.selectedShip);
     const visibleTilesRef = useRef([]);
     const startingViewportBounds = useRef(mapContext.current.viewportBoundsGeojson.geometry.coordinates);

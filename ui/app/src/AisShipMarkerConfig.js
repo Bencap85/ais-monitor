@@ -1,4 +1,4 @@
-import { NAVIGATIONAL_STATUS, NAVIGATIONAL_STATUS_TO_CODE, CODE_TO_NAVIGATIONAL_STATUS, SHIP_STATUSES } from "./constants/constants";
+import { NAVIGATIONAL_STATUS, CODE_TO_NAVIGATIONAL_STATUS, SHIP_STATUSES } from "./constants/constants";
 import { getStatus } from "./sidebar/AisShipsListItem";
 
 // Active ships

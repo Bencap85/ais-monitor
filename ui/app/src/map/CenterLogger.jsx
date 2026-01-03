@@ -1,5 +1,5 @@
-import { useMap, useMapEvents } from 'react-leaflet';
-import { useEffect, useState } from 'react';
+import { useMapEvents } from 'react-leaflet';
+import { useState } from 'react';
 import './CenterLogger.css';
 
 export default function CenterLogger({ mapContext }) {

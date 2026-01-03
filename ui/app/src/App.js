@@ -5,7 +5,6 @@ import AisShipPopup from './popup/AisShipPopup.jsx';
 import { useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setCurrentMode } from './slice/currentModeSlice.js';
-import { setSelectedShip } from './slice/selectedShipSlice.js';
 import { DATA_SOURCES } from './constants/constants.js';
 
 
