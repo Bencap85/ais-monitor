@@ -39,6 +39,7 @@ jobs:
           REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
         run: |
           cd ui
+          cd app
           npm run build
 
       - name: Configure AWS credentials (assume role via OIDC)
