@@ -8,6 +8,7 @@ on:
       - "ui/**"
       - ".github/workflows/ui-deployment.yml"
 
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
