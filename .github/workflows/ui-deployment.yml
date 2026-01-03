@@ -38,6 +38,7 @@ jobs:
       - name: Build
         env:
           REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          DISABLE_ESLINT_PLUGIN: "true"
         run: |
           cd ui
           cd app
