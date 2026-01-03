@@ -3,7 +3,7 @@ name: Build & Deploy UI
 on:
   push:
     branches:
-      - main
+      - deployment
     paths:
       - "ui/**"
       - ".github/workflows/ui-deployment.yml"
