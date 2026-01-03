@@ -1,4 +1,8 @@
-name: Build & Deploy UI
+name: UI Deployment
+
+permissions: 
+  id-token: write 
+  contents: read
 
 on:
   push:
