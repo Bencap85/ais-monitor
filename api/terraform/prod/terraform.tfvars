@@ -15,3 +15,6 @@ service_paths = {
   ingestor    = ["/ingestor/*"]
   ws          = ["/socket.io*"]
 }
+
+alb_dns_name        = "ais-api-alb-1011091891.us-east-2.elb.amazonaws.com"
+alb_origin_protocol = "http-only"

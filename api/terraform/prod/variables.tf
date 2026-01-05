@@ -60,3 +60,20 @@ variable "broadcaster_service_base_path" {
   default = "/broadcaster/api/v1"
 }
 
+variable "alb_dns_name" {
+  description = "ALB DNS name (e.g., ais-api-alb-1011091891.us-east-2.elb.amazonaws.com)"
+  type        = string
+}
+
+variable "alb_origin_id" {
+  description = "Origin ID for the ALB origin"
+  type        = string
+  default     = "alb-api"
+}
+
+variable "alb_origin_protocol" {
+  description = "CloudFront origin protocol policy for ALB: http-only or https-only"
+  type        = string
+  default     = "http-only"
+}
+
