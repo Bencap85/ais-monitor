@@ -60,9 +60,13 @@ export default function AisMap({ mapContext, setIsLoading }) {
         
         console.log("Fetching...");
 
-        const startTime = performance.now();
+        const fetchStartTime = performance.now();
 
         setIsLoading(true);
+
+        const twentyFourHoursAgoUtc = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const startTime = twentyFourHoursAgoUtc;
+        const endTime = new Date().toISOString();
 
         fetch(`${REPOSITORY_SERVICE_BASE_URL}/ships-within-bounds`, {
             method: 'POST',
@@ -70,7 +74,11 @@ export default function AisMap({ mapContext, setIsLoading }) {
                 'Content-Type': 'application/json',
                 'X-Client-ID': clientId
             },
-            body: JSON.stringify({ geojson: mapContext.current.viewportBoundsGeojson }),
+            body: JSON.stringify({ 
+                geojson: mapContext.current.viewportBoundsGeojson,
+                startTime,
+                endTime
+            }),
             signal: controller.signal
         })
         .then(response => {
@@ -78,8 +86,8 @@ export default function AisMap({ mapContext, setIsLoading }) {
         })
         .then(data => {
 
-            const endTime = performance.now();
-            const elapsed = (endTime - startTime) / 1000; // seconds
+            const fetchEndTime = performance.now();
+            const elapsed = (fetchEndTime - fetchStartTime) / 1000; // seconds
             console.log(`Fetch took ${elapsed.toFixed(2)} seconds`);
 
             console.log("Received initial data from ships-within-bounds");

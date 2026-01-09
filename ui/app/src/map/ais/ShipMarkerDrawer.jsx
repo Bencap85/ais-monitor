@@ -122,7 +122,7 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
             lastSelectedShipRef.current = selectedShip;
             const mmsi = lastSelectedShipRef.current.mmsi;
 
-            fetch(`${REPOSITORY_SERVICE_BASE_URL}/history/${mmsi}`)
+            fetch(`${REPOSITORY_SERVICE_BASE_URL}/ships/${mmsi}/history`)
                 .then(response => response.json())
                 .then(data => {
 

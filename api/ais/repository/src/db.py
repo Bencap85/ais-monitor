@@ -148,7 +148,7 @@ def batch_upsert_static_data(conn: connection, static_batch: List) -> None:
         conn.commit()
         print(f"Successfully inserted/updated {len(static_batch)} static ship records")
 
-def find_ships_within_bounds(cursor: any, geometry: dict) -> list:
+def find_ships_within_bounds(cursor: any, geometry: dict, start_time: str, end_time: str) -> list:
     try:
         query = """
             SELECT
@@ -170,18 +170,26 @@ def find_ships_within_bounds(cursor: any, geometry: dict) -> list:
             LEFT JOIN ship_type
                 ON ship_static_data.ship_type = ship_type.type_code
             WHERE ais_ships.position && ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)
-            AND ST_Intersects(
-            ais_ships.position::geometry,
-            ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)
-            )
-            AND ais_ships.timestamp > NOW() - INTERVAL '24 hours';
+                AND ST_Intersects(
+                    ais_ships.position::geometry,
+                    ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)
+                )
+                AND ais_ships.timestamp >= (%s)
+                AND ais_ships.timestamp <= (%s);
         """
-        print("Executing spatial query with geometry:", json.dumps(geometry))
-        start_time = datetime.now(timezone.utc)
+        logger.info(f"Executing spatial query with geometry: {json.dumps(geometry)}, start_time: {start_time}, end_time: {end_time}")
+        query_start_time = datetime.now(timezone.utc)
      
-        cursor.execute(query, (json.dumps(geometry), json.dumps(geometry),))
+        cursor.execute( 
+            query, ( 
+                json.dumps(geometry), 
+                json.dumps(geometry), 
+                start_time, 
+                end_time
+            )
+        )
 
-        elapsed_time = datetime.now(timezone.utc) - start_time
+        elapsed_time = datetime.now(timezone.utc) - query_start_time
         elapsed_seconds = elapsed_time.total_seconds()  
         logger.info(f"Query took {elapsed_seconds} seconds") 
                         

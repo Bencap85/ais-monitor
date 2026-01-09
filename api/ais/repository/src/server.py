@@ -52,7 +52,9 @@ def create_api() -> Flask:
                             ]
                         ]
                     }
-                }
+                },
+                startTime: "2025-01-01T00:00:00Z", 
+                endTime: "2025-01-02T00:00:00Z"
             }
 
         Returns:
@@ -62,7 +64,12 @@ def create_api() -> Flask:
         client_id = request.headers.get("X-Client-ID") or request.remote_addr
 
         try:
-            geojson = request.json.get("geojson")
+            body = request.json
+
+            geojson = body.get("geojson")
+            start_time = body.get("startTime")
+            end_time = body.get("endTime")
+
             geometry = geojson["geometry"]
             coordinates = geometry["coordinates"]
         except (KeyError, TypeError) as k:
@@ -72,7 +79,7 @@ def create_api() -> Flask:
         try:
             normalized_coordinates = normalize_coordinates(coordinates)
             geometry["coordinates"] = normalized_coordinates
-            results = query_manager.execute_query(find_ships_within_bounds, client_id, geometry)
+            results = query_manager.execute_query(find_ships_within_bounds, client_id, geometry, start_time, end_time)
             return jsonify(results)
         
         except psycopg2.errors.QueryCanceled as e:
@@ -82,7 +89,7 @@ def create_api() -> Flask:
             logger.error("Request failed:", e)
             return jsonify({"error": "Request failed"}), 500
         
-    @app.route(f'{BASE_PATH}/history/<int:mmsi>', methods=['GET'])
+    @app.route(f'{BASE_PATH}/ships/<int:mmsi>/history', methods=['GET'])
     def get_history(mmsi: int):
         try:
             connection = pg_pool.getconn()
