@@ -9,7 +9,7 @@ export default function SidebarHeader() {
     const currentMode = useSelector(state => state.currentMode);
 
     const satelliteTab = {
-        name: "Satellite (deprecated)",
+        name: "Satellite (Legacy)",
         dataSource: DATA_SOURCES.SATELLITE
     }
 

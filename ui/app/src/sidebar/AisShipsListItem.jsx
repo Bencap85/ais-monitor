@@ -29,42 +29,38 @@ export default function AisShipsListItem({ ship, onClick } ) {
             onClick(ship)
         }} >
             <div className="item-left">
-                <div className="title">
-                    {ship?.mmsi}
-                </div>
-
-                <div className="data-element">
-                    <div className="label">
-                        Name:
+                <div className="header">
+                    <div className="title">
+                        {ship?.mmsi}
                     </div>
-                    <div className="value">
-                        {ship.Name || "Unknown"}
-                    </div>
-                </div>
-
-                <div className="data-element">
-                    <div className="label">
-                        Status:
-                    </div>
-                    <div className="value">
-                        {CODE_TO_NAVIGATIONAL_STATUS[ship?.NavigationalStatus] || "Unknown"}
-                    </div>
-                </div>
-
-                <div className="data-element">
-                    <div className="label">
-                        SOG:
-                    </div>
-                    <div className="value">
-                        {ship?.Sog} knots
-                    </div>
-                </div>
-                {/* [ {ship?.Latitude}, {ship?.Longitude} ] */}
-            </div>
-            <div className="item-right">
-                <div className={status === SHIP_STATUSES.ONLINE 
+                    <div className={status === SHIP_STATUSES.ONLINE 
                                 ? "ship-status online" : "ship-status"}>
-                    {status}
+                        {status}
+                    </div>
+                </div>
+
+                <div className="name">
+                    {ship?.Name}
+                </div>
+
+                <div className="data-grid">
+                    <div className="data-element">
+                        <div className="label">STATUS:</div>
+                        <div className="value">{CODE_TO_NAVIGATIONAL_STATUS[ship?.NavigationalStatus] || "Unknown"}</div>
+                    </div>
+                    <div className="data-element">
+                        <div className="label">TYPE:</div>
+                        <div className="value">{ship?.ShipTypeName?.split(",")[0]}</div>
+                    </div>
+                    <div className="data-element">
+                        <div className="label">SOG:</div>
+                        <div className="value">{ship?.Sog} knots</div>
+                    </div>
+                    <div className="data-element">
+                        <div className="label">COG:</div>
+                        <div className="value">{ship?.TrueHeading === 511 ? "Unknown" : `${ship?.TrueHeading}°`}</div>
+                    </div>
+                    
                 </div>
             </div>
         </div>

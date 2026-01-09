@@ -26,7 +26,6 @@
     display: flex;
     margin-right: 0;
     margin-left: auto;
-
 }
 
 .control {
@@ -37,6 +36,7 @@
     justify-content: right;
     height: 100%;
     padding: 0;
+    background-color: inherit;
 
 }
 

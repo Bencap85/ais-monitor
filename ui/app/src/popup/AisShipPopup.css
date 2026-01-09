@@ -3,10 +3,10 @@
   z-index: 10000;
   margin-left: 31vw;
   margin-top: 1vh;
-  background-color: var(--sidebar-background-color);
+  background-color: var(--ship-background-color);
   color: #ffffff;
   /* padding-bottom: 20px; */
-  width: 300px;
+  width: 325px;
   box-shadow: none;
 }
 
@@ -18,7 +18,7 @@
   padding: 10px;
 }
 
-.header {
+.ship-popup .header {
   display: flex;
   align-content: horizontal;
 }
@@ -34,7 +34,7 @@
   margin-left: 4px;
   height: 40%;
   margin-top: auto;
-   margin-bottom: auto;
+  margin-bottom: auto;
   line-height: 50%;   /* centers the glyph vertically */
   text-align: center;  /* centers horizontally */
   border: 1px solid var(--text-color-dark);
@@ -56,19 +56,22 @@
 .popup-ship-status {
     font-size: 12px;
     box-shadow: none;
-    border: 1px solid red;
-    color: red;
-    padding: 10%;
+    border: 1px solid var(--offline-light);
+    border-radius: 1px;
+    color: var(--offline-light);
+    background-color: var(--offline-dark);
+    padding: 6% 18%;
     margin-top: auto;
     margin-bottom: auto;
     vertical-align: middle;
 }
 
 .online {
-    padding: 10%;
+    padding: 6% 18%;
     box-shadow: none;
-    border: 1px solid green;
-    color: green;
+    border: 1px solid var(--online-light);
+    color: var(--online-light);
+    background-color: var(--online-dark);
 }
 
 .ship-popup-close-button {

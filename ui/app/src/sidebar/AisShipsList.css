@@ -1,10 +1,30 @@
-/* .ais-ships-list {
-    
-} */
+.live-indicator {
+  display: inline-block;
+  box-shadow: none;
+  width: 10px; /* Adjust width and height as needed */
+  height: 10px; /* Adjust width and height as needed */
+  border-radius: 50%; /* Set border-radius to 50% */
+  background-color: var(--online-light); /* Change background color to green */
+  margin-right: 4px;
+}
+
+.ais-ships-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex; 
+  flex-direction: column; 
+  flex: 1 1 auto; /* fills the space between search-bar and footer */ 
+  min-height: 0; /* critical */
+  background-color: var(--ship-background-color);
+  overflow-y: hidden;
+  box-shadow: none;
+}
 
 .ships-list-wrapper {
-    height: 85.5vh;
-    overflow-y: scroll;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    box-shadow: none;
 }
 
 ::-webkit-scrollbar {
@@ -21,29 +41,40 @@
 }
 
 .total-vessels {
-    box-shadow: none;
     font-size: 12px;
-    margin-left: 2px;
+    background-color: var(--sidebar-background-color);
+    box-shadow: none;
+}
+
+.ship-count-container {
+    box-shadow: none;
+    padding: 8px 8px;
+    /* border-bottom: 1px solid white; */
 }
 
 .ais-ships-list-header {
     display: flex;
     align-content: horizontal;
-    box-shadow: none;
-    margin-left: 2px;
+    /* box-shadow: none; */
+    padding: 8px 8px;
+    margin-left: -2px;
+    background-color: var(--sidebar-background-color);
+    text-transform: uppercase;
 }
 
 .ais-ships-list-header-title {
     box-shadow: none;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    font-size: 12px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 4px;
+    font-size: 10px;
+    color: var(--text-color-dark);
 }
 
 .ais-ships-list-expand-icon-wrapper {
   height: 16px;
   width: 16px;
-  background-color: var(--sidebar-background-color);
+  background-color: inherit;
   margin-right: 2%;
   margin-left: auto;
   display: flex;
@@ -54,6 +85,9 @@
 .ais-ships-list-expand-icon {
     height: 100%;
     width: 100%;
+
+    /* Match icon match text-color-light */
+    opacity: 40%;
 }
 
 button {
@@ -62,4 +96,38 @@ button {
     border: none;
     box-shadow: none;
     color: var(--text-color-dark);
+}
+
+.sidebar-footer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-footer div {
+  box-shadow: none;
+
+}
+
+.pagination-controls {
+  display: block;
+  text-align: center;
+  width: fit-content;
+  font-size: 10px;
+}
+
+.pagination-controls button {
+  font-size: 10px;
+  background-color: var(--sidebar-background-color);
+ 
+  border: none;
+  box-shadow: none;
+  color: var(--text-color-dark);
+  padding: 0 10px;
+}
+
+.version-tag {
+
 }

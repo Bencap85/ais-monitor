@@ -30,11 +30,11 @@ export default function SearchBar() {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder={"Search vessels by MMSI, type, etc..."}
+            placeholder={"Search by MMSI, name, type..."}
         />
         <div className="cancel-search-div">
             <button className="cancel-search-button" onClick={() => setInputValue("")}>
-                Cancel
+                Clear
             </button>
         </div>
     </div>

@@ -2,30 +2,28 @@
     box-shadow: none;
     display: flex;
     align-items: center;       /* Vertically center content */
-    justify-content: flex-start;
-    background-color: var(--zone-hover-background-color);
+    justify-content: center;
+    background-color: var(--sidebar-background-color);
     padding-left: 2%;
-    width: 32%;
+    width: 50%;
     height: 100%;
     font-size: 12px;
     margin: 0;
+    margin-bottom: 2px;
     transition: background-color 0.1s ease;
-
-    /* Reserve space for borders */
-    border-left: 0.5px solid transparent;
-    border-right: 0.5px solid white;
-    border-bottom: 0.5px solid white;
+    border-bottom: 2px solid transparent; 
+    color: var(--text-color-dark);
 }
 
 .tab.selected:hover {
-    border-bottom: 0.5px solid var(--sidebar-background-color);
-    background-color: var(--sidebar-background-color);
-    /* transition: background-color 0.1s ease; */
+    box-shadow: none;
+    border-bottom: 2px solid var(--online-light);
+    transition: background-color 0.1s ease;
 }
 
 .tab.selected {
-    background-color: var(--sidebar-background-color);
-    border-left: 0.5px solid white;
-    border-right: 0.5px solid white;
-    border-bottom: 0.5px solid var(--sidebar-background-color);
+    box-shadow: none;
+    background-color: var(--ship-background-color);
+    border-bottom: 2px solid var(--online-light);
+    color: var(--online-light);
 }

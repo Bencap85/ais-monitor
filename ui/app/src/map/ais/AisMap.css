@@ -39,11 +39,14 @@
     box-shadow: none;
 }
 
-.history-popup {
+/* The container for the history popups */
+.leaflet-tooltip.history-popup {
   box-shadow: 0 0 0 0.5px #ccc;
   background-color: var(--sidebar-background-color);
   color: var(--text-color-light);
   border: none;
+  opacity: 100;
+  
 }
 
 .history-popup div {

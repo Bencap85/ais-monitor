@@ -1,38 +1,35 @@
-.detect-ships-button {
-  background-color: #118fce;
-  color: var(--text-color-light);
-  border: none;
-  padding: 10px 16px;
-  border-radius: 4px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  font-size: 16px;
-  width: 10vw;
-  height: 5vh;
-  margin-top: 5vh;
-}
 
 .sidebar {
+  display: flex;
+  flex-direction: column;
+
+
   width: 30%;
-  height: 95vh;
+  height: 100vh;
   background-color: var(--sidebar-background-color);
   color: var(--text-color-light);
-  float: left;
-  height: 100%;
+  /* float: left; */
   box-shadow: 0 0 0 0.5px #ccc;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 .sidebar::-webkit-scrollbar {
   display: none;
 }
 
-.zones-list-header {
-    font-size: 14px;
-    box-shadow: none;
-    padding-left: 5%;
+.sidebar-footer {
+
+  flex-shrink: 0;
+  height: 4vh;
+  width: 100%;
+  /* padding-right: 4px; */
+  background-color: var(--sidebar-background-color);
+  font-size: 10px;
+  text-align: right;
 }
 
-.zones-list {
-  box-shadow: none;
+.sidebar-footer p {
+  margin-right: 4px;
+  color: var(--text-color-dark);
 }
+

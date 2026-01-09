@@ -30,11 +30,18 @@ export default function AisShipsList({ isLoading }) {
         <div className="ais-ships-list">
             <div className="total-vessels">
 
-                {isLoading ? "Loading..." : `${shipsToDisplay?.length} vessels found`}
-
+                <div className="ship-count-container">
+                    {isLoading ? 
+                        "Loading..." : 
+                        <>
+                            <div className="live-indicator"></div>
+                            <span>{shipsToDisplay?.length} vessels found</span>
+                        </>
+                    }
+                </div>
                 <div className="ais-ships-list-header">
                     <div className="ais-ships-list-header-title">
-                        Vessels
+                        VESSELS LIST
                     </div>
                     <div className="ais-ships-list-expand-icon-wrapper" onClick={() => setExpanded(!expanded)}>
                         {expanded ? 
@@ -49,7 +56,9 @@ export default function AisShipsList({ isLoading }) {
                 {expanded && paginatedShips.map(ship => 
                     <AisShipsListItem key={ship.mmsi} ship={ship} onClick={onClick} />
                 )}
-                {(expanded && shipsToDisplay.length > 0) && (
+            </div>
+            {(true) && (
+                <div className="sidebar-footer">
                     <div className="pagination-controls">
                         <button disabled={page === 0} onClick={() => setPage(page - 1)}>Prev</button>
                         <span>Page {page + 1}</span>
@@ -60,8 +69,11 @@ export default function AisShipsList({ isLoading }) {
                         Next
                         </button>
                     </div>
+                    <div className="version-tag">
+                        <p>v{process.env.REACT_APP_UI_VERSION}</p>
+                    </div>
+                </div>
                 )}
-            </div>
         </div>
     );
 }

@@ -85,6 +85,8 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
 
         if (!selectedShip) {
             lastSelectedShipRef.current = null;
+            clearHistoryMarkers();
+            clearTrails();
             return;
         }
 
@@ -164,17 +166,6 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
 
             const currentMmsis = new Set(ships.map(s => s.mmsi));
             const existingMmsis = new Set(shipMarkersRef.current.keys().map(Number));
-
-            // Remove selectedShip's history (if necessary)
-            if (!currentMmsis.has(selectedShip?.mmsi)) {
-                clearTrails();
-                clearHistoryMarkers();
-            }
-
-            // Add selectedShip back in
-            // if (currentMmsis.has(selectedShip?.mmsi) && !existingMmsis.has(selectedShip.mmsi)) {
-            //     dispatch(setSelectedShip({ ...selectedShip }));
-            // }
 
             // Add ship markers that do not exist. Do not render yet.
             ships.forEach(ship => {
@@ -284,6 +275,19 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
         marker.on('click', () => {
             handleClick(ship.mmsi);
         });
+
+        const popupContent = `
+                <div class=${"history-popup"}>
+                    <span class="key">Name:</span> ${ship.Name || "Unknown"}<br/>
+                    <span class="key">Type:</span> ${ship.ShipTypeName?.split(",")[0] || "Unknown"}<br/>
+                </div>
+            `;
+
+        marker.bindTooltip(popupContent, {
+                direction: "top",
+                className: "history-popup"
+            });
+
         return marker;
     }
 
@@ -428,7 +432,6 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
             historyMarkersRef.current.push(prevMarker);
             historyMarkersRef.current.push(marker);
         }
-
 
         if (!shipsTrailRef.current[mmsi]) {
             shipsTrailRef.current[mmsi] = [];

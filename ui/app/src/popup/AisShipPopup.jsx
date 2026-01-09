@@ -77,19 +77,6 @@ export default function AisShipPopup({ ship }) {
                         <div className="value">{ship?.mmsi}</div>
                     </div>
                     <div className="ship-popup-item">
-                        <div className="label">Heading</div>
-                        <div className="value">{ship?.TrueHeading !== 511 ? ship.TrueHeading : "Unknown"}°</div>
-                    </div>
-                    <div className="ship-popup-item">
-                        <div className="label">Navigational Status</div>
-                        <div className="value">{CODE_TO_NAVIGATIONAL_STATUS[ship?.NavigationalStatus] || "Unknown"}</div>
-                    </div>
-                    <div className="ship-popup-item">
-                        <div className="label">Speed Over Ground</div>
-                        <div className="value">{ship?.Sog} knots</div>
-                    </div>
-                    
-                    <div className="ship-popup-item">
                         <div className="label">Name</div>
                         <div className="value">{ship?.Name || "Unknown"}</div>
                     </div>
@@ -98,12 +85,25 @@ export default function AisShipPopup({ ship }) {
                         <div className="value">{ship?.ShipTypeName || "Unknown"}</div>
                     </div>
                     <div className="ship-popup-item">
-                        <div className="label">Last Update</div>
-                        <div className="value">{new Date(ship?.Timestamp).toUTCString()}</div>
+                        <div className="label">Navigational Status</div>
+                        <div className="value">{CODE_TO_NAVIGATIONAL_STATUS[ship?.NavigationalStatus] || "Unknown"}</div>
                     </div>
                     <div className="ship-popup-item">
                         <div className="label">Length</div>
                         <div className="value">{ship?.ShipLength ? ship?.ShipLength + " meters": "Unknown"}</div>
+                    </div>
+                    <div className="ship-popup-item">
+                        <div className="label">Speed Over Ground</div>
+                        <div className="value">{ship?.Sog} knots</div>
+                    </div>
+                    <div className="ship-popup-item">
+                        <div className="label">Heading</div>
+                        <div className="value">{ship?.TrueHeading !== 511 ? ship.TrueHeading : "Unknown"}°</div>
+                    </div>
+                    
+                    <div className="ship-popup-item">
+                        <div className="label">Last Update</div>
+                        <div className="value">{new Date(ship?.Timestamp).toUTCString()}</div>
                     </div>
                 </div>
             </div>
