@@ -27,7 +27,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - ais-ws-broadcaster
+      - postgis-db
     profiles: ["dev"]
 
   ais-ingestor:
@@ -71,6 +71,21 @@ services:
       start_period: 5s
     profiles: ["infra"]
 
+  postgis-db:
+    image: postgis/postgis
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ais_data
+    volumes:
+      - ./db/db/init:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+      - ./db/db/data:/data
+    profiles: ["dev"]
+
 volumes:
   localstack_data:
+  pgdata:
 

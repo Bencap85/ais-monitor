@@ -71,7 +71,7 @@ class AisIngestor:
         if message is None:
             logger.info("Received empty message")
             return
-        
+
         message_type = message.get("MessageType")
         if message_type in ACCEPTED_MESSAGE_TYPES:
             ais_message = message["Message"][message_type]

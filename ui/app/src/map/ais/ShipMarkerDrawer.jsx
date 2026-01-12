@@ -97,6 +97,7 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
         }
 
         // If this is an update to the same selected ship, draw new trail segment
+        console.log({ lastMmsi: lastSelectedShipRef?.current?.mmsi, currentMmsi: selectedShip?.mmsi});
         if (lastSelectedShipRef?.current?.mmsi === selectedShip?.mmsi) {
             const prevLatLng = [ lastSelectedShipRef.current.Latitude, lastSelectedShipRef.current.Longitude ];
             const latLng = [ selectedShip.Latitude, selectedShip.Longitude ];
@@ -111,6 +112,8 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
                 TrueHeading: selectedShip.TrueHeading
             };
             
+            console.log("CREATING NEW TRAIL SEGMENT UPDATE");
+            console.log(JSON.stringify({prevLatLng, latLng, mmsi: selectedShip.mmsi, prevPointData, pointData}));
             updateAisShipMarker(shipMarkersRef.current.get(selectedShip.mmsi), selectedShip);
             drawTrail(prevLatLng, latLng, selectedShip.mmsi, prevPointData, pointData);
 

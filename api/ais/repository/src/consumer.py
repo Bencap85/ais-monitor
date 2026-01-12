@@ -39,6 +39,8 @@ class AisConsumer():
             "sqs_messages_per_second": 0,
             "start_time": None
         }
+    
+        self._purge_queue_on_startup()
 
     def _flush_ships(self) -> None:
         batch_upsert_ships(self.conn, self.batch_ships.values())
@@ -89,6 +91,14 @@ class AisConsumer():
 
     def get_metrics(self) -> dict:
         return self.stats
+
+    def _purge_queue_on_startup(self) -> None:
+        try:
+            self.sqs_client.purge_queue(QueueUrl=self.queue_url)
+            logger.info("Queue purge requested")
+            time.sleep(5)
+        except self.sqs_client.exceptions.PurgeQueueInProgress:
+            logger.info("Queue purge already in progress, continuing anyway")
 
     def run(self):
         self.stats["start_time"] = datetime.now(timezone.utc)

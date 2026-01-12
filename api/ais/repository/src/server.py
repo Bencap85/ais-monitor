@@ -86,7 +86,7 @@ def create_api() -> Flask:
             logger.info(f"Query for client {client_id} was cancelled")
             return jsonify([])
         except Exception as e:
-            logger.error("Request failed:", e)
+            logger.error("Request failed: {e}")
             return jsonify({"error": "Request failed"}), 500
         
     @app.route(f'{BASE_PATH}/ships/<int:mmsi>/history', methods=['GET'])
