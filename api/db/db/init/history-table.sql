@@ -8,7 +8,6 @@ CREATE TABLE ais_ships_history (
     timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_ais_ships_history_mmsi ON ais_ships_history (mmsi);
 CREATE INDEX idx_history_mmsi_timestamp ON ais_ships_history(mmsi, timestamp DESC);
 
 -- Stored procedure for pruning

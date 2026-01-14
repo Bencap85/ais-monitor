@@ -32,7 +32,10 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
     const ships = useSelector(selectFilteredShips);
     const lastTilesRef = useRef([]);
     const socketRef = useRef(null);
+
     const selectedShip = useSelector(state => state.selectedShip);
+    // Ref used to persist value inside useEffect
+    const selectedShipRef = useRef(null);
 
     const metrics = useRef({});
 
@@ -58,6 +61,10 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
             messages: 0
         }
     }
+
+    useEffect(() => { 
+        selectedShipRef.current = selectedShip; 
+    }, [selectedShip]);
 
     useEffect(() => {
         const socket = io(WS_URL);
@@ -111,11 +118,12 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
                     metrics.current = resetMetrics();
                 }  
 
-                const normalizedShip = normalizeShip({...data, Timestamp: new Date().toISOString() });
+                let normalizedShip = normalizeShip({...data, Timestamp: new Date().toISOString() });
                 
                 // Update selected ship
-                if (data.UserID === selectedShip?.mmsi) {
-                    normalizedShip = { ...selectedShip, ...normalizedShip };
+                if (normalizedShip.UserID === selectedShipRef.current?.mmsi) {
+                    normalizedShip = { ...selectedShipRef.current, ...normalizedShip };
+                    dispatch(setSelectedShip(normalizedShip));
                 }
 
                 // Add ship to buffer to update redux
@@ -192,6 +200,5 @@ export default function ShipSocketListener({ visibleTilesRef, handleAisShipClick
     }, []);
 
     
-
     return null;
 }

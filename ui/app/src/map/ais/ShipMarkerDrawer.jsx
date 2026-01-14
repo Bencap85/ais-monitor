@@ -103,17 +103,15 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
             const latLng = [ selectedShip.Latitude, selectedShip.Longitude ];
             const prevPointData = {
                 Sog: lastSelectedShipRef.current.Sog,
-                Timestamp: lastSelectedShipRef.current.LastUpdated,
+                Timestamp: lastSelectedShipRef.current.Timestamp,
                 TrueHeading: lastSelectedShipRef.current.TrueHeading
             };
             const pointData = {
                 Sog: selectedShip.Sog,
-                Timestamp: selectedShip.LastUpdated,
+                Timestamp: selectedShip.Timestamp,
                 TrueHeading: selectedShip.TrueHeading
             };
-            
-            console.log("CREATING NEW TRAIL SEGMENT UPDATE");
-            console.log(JSON.stringify({prevLatLng, latLng, mmsi: selectedShip.mmsi, prevPointData, pointData}));
+
             updateAisShipMarker(shipMarkersRef.current.get(selectedShip.mmsi), selectedShip);
             drawTrail(prevLatLng, latLng, selectedShip.mmsi, prevPointData, pointData);
 
@@ -122,8 +120,7 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
             clearTrails();
             clearHistoryMarkers();
 
-            lastSelectedShipRef.current = selectedShip;
-            const mmsi = lastSelectedShipRef.current.mmsi;
+            const mmsi = selectedShip.mmsi;
 
             fetch(`${REPOSITORY_SERVICE_BASE_URL}/ships/${mmsi}/history`)
                 .then(response => response.json())
@@ -157,7 +154,8 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
                     }
                 })
         }
-
+        
+        lastSelectedShipRef.current = selectedShip;
 
     }, [selectedShip]);
 

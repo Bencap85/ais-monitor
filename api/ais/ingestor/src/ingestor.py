@@ -45,7 +45,8 @@ class AisIngestor:
             "sns_message_count": 0,
             "lag_seconds": 0,
             "ais_messages_per_second": 0,
-            "start_time": None
+            "start_time": None,
+            "total_throughput_bytes": 0
         }
 
     def _queue_message(self, ais_message: dict) -> None:
@@ -71,6 +72,8 @@ class AisIngestor:
         if message is None:
             logger.info("Received empty message")
             return
+        
+        self.stats["total_throughput_bytes"] += len(json.dumps(message).encode('utf-8'))
 
         message_type = message.get("MessageType")
         if message_type in ACCEPTED_MESSAGE_TYPES:
