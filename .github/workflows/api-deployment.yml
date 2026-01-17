@@ -51,16 +51,16 @@ jobs:
 
       - name: Add EC2 host to known_hosts
         run: |
-          ssh-keyscan -H 3.134.93.191 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 3.14.84.74 >> ~/.ssh/known_hosts
 
       - name: Upload docker compose and scripts to EC2
         run: |
-          scp -i ~/.ssh/ec2-key.pem api/generate-env-file.sh ec2-user@3.134.93.191:/home/ec2-user/ais/generate-env-file.sh
-          scp -i ~/.ssh/ec2-key.pem api/docker-compose-prod.yml ec2-user@3.134.93.191:/home/ec2-user/ais/docker-compose.yml
+          scp -i ~/.ssh/ec2-key.pem api/generate-env-file.sh ec2-user@3.14.84.74:/home/ec2-user/ais/generate-env-file.sh
+          scp -i ~/.ssh/ec2-key.pem api/docker-compose-prod.yml ec2-user@3.14.84.74:/home/ec2-user/ais/docker-compose.yml
  
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/ec2-key.pem ec2-user@3.134.93.191 \
+          ssh -i ~/.ssh/ec2-key.pem ec2-user@3.14.84.74 \
           "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 822491881272.dkr.ecr.us-east-2.amazonaws.com && mkdir -p ~/ais && cd ~/ais && sudo chmod +x generate-env-file.sh && ./generate-env-file.sh && docker-compose pull && docker-compose up -d"
 
 
