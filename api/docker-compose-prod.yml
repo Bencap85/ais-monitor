@@ -11,7 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - ./db/db/init:/docker-entrypoint-initdb.d
-      - pgdata:/var/lib/postgresql/data
+      - /mnt/pgdata:/var/lib/postgresql/data
       - ./db/db/data:/data
     restart: unless-stopped
 
