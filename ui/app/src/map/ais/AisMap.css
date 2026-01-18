@@ -104,3 +104,26 @@
   50% { fill: black; }                   /* flash white */
 }
 
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 50vh;
+    overflow-y: auto;
+    z-index: 999;
+  }
+  .map-view-container {
+    width: 100%;
+  }
+  .ship-popup {
+    width: 80%;
+    margin-left: 10px !important;
+    position: fixed;
+    z-index: 1000000;
+  }
+}
+
