@@ -311,8 +311,12 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
         const el = marker.getElement();
         if (el) {
             const icon = el.querySelector('.ais-ship-icon');
+            
             const rotation = heading !== 511 ? heading : 0;
+            const iconColor = getMarkerColor(newShipData);
+
             icon.style.transform = `rotate(${rotation}deg)`;
+            icon.style.fill = iconColor;
         }
 
         const start = marker.getLatLng();
