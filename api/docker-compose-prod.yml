@@ -1,7 +1,7 @@
 services:
 
   postgis-db:
-    image: postgis/postgis
+    image: timescale/timescaledb-ha:pg15.15-ts2.24.0
     container_name: postgis_db
     environment:
       POSTGRES_USER: postgres

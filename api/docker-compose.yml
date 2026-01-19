@@ -72,7 +72,7 @@ services:
     profiles: ["infra"]
 
   postgis-db:
-    image: postgis/postgis
+    image: timescale/timescaledb-ha:pg15.15-ts2.24.0
     ports:
       - "5432:5432"
     environment:

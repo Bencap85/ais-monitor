@@ -1,5 +1,4 @@
 CREATE TABLE ais_ships_history (
-    id SERIAL PRIMARY KEY,
     mmsi BIGINT NOT NULL,
     sog_knots INT,
     navigational_status INT,

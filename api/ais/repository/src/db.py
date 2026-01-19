@@ -217,7 +217,6 @@ def history_for_mmsi(mmsi: int, start_time: str, end_time: str, connection: conn
     cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     query = """
         SELECT
-            id,
             mmsi AS "UserID",
             navigational_status AS "NavigationalStatus",
             ST_Y(position::geometry) AS "Latitude",
