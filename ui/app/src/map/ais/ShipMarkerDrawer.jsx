@@ -122,18 +122,17 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
 
             const mmsi = selectedShip.mmsi;
 
-            fetch(`${REPOSITORY_SERVICE_BASE_URL}/ships/${mmsi}/history`)
+            const twentyFourHoursAgoUtc = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const startTime = twentyFourHoursAgoUtc;
+            const endTime = new Date().toISOString();
+
+            fetch(`${REPOSITORY_SERVICE_BASE_URL}/ships/${mmsi}/history?startTime=${startTime}&endTime=${endTime}`)
                 .then(response => response.json())
                 .then(data => {
 
                     // Sort ascending by timestamp
                     data = data?.sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp));
 
-                    // Exclude entries older than 24 hours
-                    const now = Date.now();
-                    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-                    data = data?.filter(datum => now - new Date(datum.Timestamp).getTime() <= ONE_DAY_MS);
-                    
                     for (let i = 0; i < data?.length-1; i++) {
                         
                         const prevLatLng = [ data[i].Latitude, data[i].Longitude ];
@@ -311,7 +310,7 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
         const el = marker.getElement();
         if (el) {
             const icon = el.querySelector('.ais-ship-icon');
-            
+
             const rotation = heading !== 511 ? heading : 0;
             const iconColor = getMarkerColor(newShipData);
 

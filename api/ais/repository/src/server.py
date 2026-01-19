@@ -3,6 +3,7 @@ import psycopg2.extras
 from psycopg2 import OperationalError, pool
 from flask import Flask, request, jsonify, make_response, current_app
 import threading
+from datetime import datetime
 import os
 import json
 import logging
@@ -12,6 +13,7 @@ from db import connect_to_database, find_ships_within_bounds, history_for_mmsi
 from query_manager import QueryManager
 from config import settings
 from coordinate_utils.utils import normalize_coordinates
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +31,14 @@ def create_api() -> Flask:
     )
 
     query_manager = QueryManager(pg_pool)
+
+    def parse_iso8601(value: str) -> datetime: 
+        try:
+            if value.endswith("Z"): 
+                value = value[:-1] 
+                return datetime.fromisoformat(value) 
+        except Exception: 
+            return None
 
     @app.post(f"{BASE_PATH}/ships-within-bounds")
     def ships_within_bounds():
@@ -91,9 +101,27 @@ def create_api() -> Flask:
         
     @app.route(f'{BASE_PATH}/ships/<int:mmsi>/history', methods=['GET'])
     def get_history(mmsi: int):
+        start_time_raw = request.args.get("startTime")
+        end_time_raw = request.args.get("endTime")
+
+        if start_time_raw is None or end_time_raw is None:
+            logger.debug("Request missing time range!")
+            return { "error": "Missing required time range" }, 400
+        
+        start_time = parse_iso8601(start_time_raw)
+        end_time = parse_iso8601(end_time_raw)
+
+        if start_time is None or end_time is None:
+            logger.debug("Error parsing time range!")
+            return { "error": "Failed to parse time range" }, 400
+        
+        if start_time > end_time:
+            logger.debug("Invalid time range specified. start_time must be before end_time")
+            return { "error": "Invalid time range. Start must be before end" }, 400
+        
         try:
             connection = pg_pool.getconn()
-            results = history_for_mmsi(mmsi, connection)
+            results = history_for_mmsi(mmsi, start_time, end_time, connection)
             return jsonify(results), 200
 
         except Exception as e:
@@ -112,4 +140,5 @@ def create_api() -> Flask:
         return {"status": "ok"}, 200
 
     return app
+
     

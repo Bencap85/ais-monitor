@@ -213,7 +213,7 @@ def find_ships_within_bounds(cursor: any, geometry: dict, start_time: str, end_t
     except Exception as e:
         raise Exception(e)
     
-def history_for_mmsi(mmsi: int, connection: connection) -> List:
+def history_for_mmsi(mmsi: int, start_time: str, end_time: str, connection: connection) -> List:
     cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     query = """
         SELECT
@@ -227,9 +227,11 @@ def history_for_mmsi(mmsi: int, connection: connection) -> List:
             true_heading AS "TrueHeading"
         FROM ais_ships_history
         WHERE mmsi = %s
+            AND timestamp >= (%s)
+            AND timestamp < (%s)
         ORDER BY timestamp DESC;
     """
-    cursor.execute(query, (mmsi,))
+    cursor.execute(query, (mmsi, start_time, end_time))
     results = cursor.fetchall()
     return results
     
