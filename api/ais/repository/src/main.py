@@ -58,9 +58,13 @@ def main():
     consumer_thread.start()
     logger.info("Consumer thread started")
 
-    history_pruner_thread = threading.Thread(target=start_history_pruner, daemon=True)
-    history_pruner_thread.start()
-    logger.info("History pruner thread started")
+    if settings.history_prune_enabled:
+        logger.info("Starting history pruner thread...")
+        history_pruner_thread = threading.Thread(target=start_history_pruner, daemon=True)
+        history_pruner_thread.start()
+        logger.info("History pruner thread started")
+    else:
+        logger.info("History prune disabled. Skipping setup...")
 
     logger.info("Starting HTTP server...")
     api = create_api()

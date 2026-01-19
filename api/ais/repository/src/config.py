@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
+    history_prune_enabled: bool = False
     max_history_per_mmsi: str = str(100) # The max number of history positions to keep for every ship
     history_prune_query_interval: str = str(5) # Schedule the history prune query to run every x minutes
 
