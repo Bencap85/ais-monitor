@@ -17,8 +17,8 @@ function App() {
 
   // Initialize map context/bounds
   const mapContext = useRef({
-    lat: 36.94,
-    lng: -76.3,
+    lat: 37,
+    lng: -76,
     zoom: 10,
     viewportBoundsGeojson: {
       geometry: { "type": "Polygon", "coordinates": [[[-76.89194580385873, 36.608913667193676], [-76.89194580385873, 37.26968150969715], [-75.66971679995248, 37.26968150969715], [-75.66971679995248, 36.608913667193676], [-76.89194580385873, 36.608913667193676]]] }

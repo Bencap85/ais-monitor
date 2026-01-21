@@ -3,7 +3,7 @@ import { useState } from 'react';
 import './CenterLogger.css';
 
 export default function CenterLogger({ mapContext }) {
-  const [center, setCenter] = useState({ lat: 0, lng: 0 });
+  const [center, setCenter] = useState({ lat: 37.00, lng: -76.00 });
 
   useMapEvents({
     move: (e) => {

@@ -55,7 +55,7 @@ export default function AisShipPopup({ ship }) {
                         onClick={() => openBingSearch(`MMSI ${ship.mmsi}`)}
                         >
                         <div className="popout-icon">
-                            ↗
+                            »
                         </div>
                     </div>
 

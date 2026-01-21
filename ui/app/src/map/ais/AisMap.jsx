@@ -18,6 +18,7 @@ const MAPBOX_API_KEY = process.env.REACT_APP_MAPBOX_API_KEY;
 let clientId = localStorage.getItem("clientId");
 if (!clientId) {
     clientId = crypto.randomUUID();
+    clientId = 1000;
     localStorage.setItem("clientId", clientId);
 }
               

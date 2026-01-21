@@ -25,14 +25,17 @@
 
 .popout-icon-div {
   display: flex;
+  width: 18px;
+  align-content: center;
+  justify-content: center;
 }
 
 .popout-icon {
+  box-shadow: none;
   color: var(--text-color-dark);
   font-weight: lighter;
-  padding: 0;
-  margin-left: 4px;
-  height: 40%;
+  padding: 0 2px;
+  height: 42%;
   margin-top: auto;
   margin-bottom: auto;
   line-height: 50%;   /* centers the glyph vertically */

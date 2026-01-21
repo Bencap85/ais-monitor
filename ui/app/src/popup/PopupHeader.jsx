@@ -9,7 +9,6 @@ export default function PopupHeader({ title,
 
     const [ closed, setClosed ] = useState(false);
 
-
     const handleMinimizeClick = () => {
         handleMinimize();
     }
@@ -22,6 +21,7 @@ export default function PopupHeader({ title,
     const handleExpandClick = () => {
         handleExpand();
     }
+
     return (
         !closed && (
             <div className="popup-header">
@@ -40,7 +40,6 @@ export default function PopupHeader({ title,
                     </button>
                 </div>
             </div>
-        
-    )
+        )
     );
 }

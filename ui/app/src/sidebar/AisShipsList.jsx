@@ -1,6 +1,6 @@
 
 import { useSelector, useDispatch } from 'react-redux';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NAVIGATIONAL_STATUSES } from '../constants/constants.js';
 import { selectAllShips, clearShips, upsertShips, selectFilteredShips  } from '../slice/aisShipsSlice.js';
 import { setSelectedShip } from '../slice/selectedShipSlice.js';
@@ -25,6 +25,10 @@ export default function AisShipsList({ isLoading }) {
     const onClick = (ship) => {
         dispatch(setSelectedShip(ship));
     }
+
+    useEffect(() => {
+        setPage(0);
+    }, [ shipsToDisplay.length ]);
 
     return (
         <div className="ais-ships-list">
