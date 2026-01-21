@@ -58,7 +58,7 @@ jobs:
           scp -i ~/.ssh/ec2-key.pem api/generate-env-file.sh ec2-user@${{ secrets.EC2_IP }}:/home/ec2-user/ais/generate-env-file.sh
           scp -i ~/.ssh/ec2-key.pem api/docker-compose-prod.yml ec2-user@${{ secrets.EC2_IP }}:/home/ec2-user/ais/docker-compose.yml
           scp -i ~/.ssh/ec2-key.pem -o StrictHostKeyChecking=no -r \
-            db/db/init \
+            api/db/db/init \
             ec2-user@${{ secrets.EC2_IP }}:~/ais/db/db/
 
       - name: Deploy to EC2
