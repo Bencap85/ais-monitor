@@ -40,7 +40,7 @@ PostgreSQL database featuring:
 ## Media
 ![Image](https://github.com/user-attachments/assets/b01583f3-9aad-4db1-9071-799152f83627)
 ![Image](https://github.com/user-attachments/assets/82c7766a-325c-4061-8b14-a2e4904b64e4)
-![Image](https://github.com/user-attachments/assets/e40d75b2-8009-48e5-8f43-aa5d4c0a281a)
+![Image](https://github.com/user-attachments/assets/68366387-6e6f-453d-9bb3-70c1d38bc62c)
 
 ## Technical Challenges / Solutions
 
