@@ -47,6 +47,7 @@ jobs:
           REACT_APP_MAPBOX_API_KEY: ${{ secrets.REACT_APP_MAPBOX_API_KEY }}
           REACT_APP_REPOSITORY_SERVICE_BASE_URL: ${{ secrets.REACT_APP_REPOSITORY_SERVICE_BASE_URL }}
           REACT_APP_WS_URL: ${{ secrets.REACT_APP_WS_URL }}
+          REACT_APP_UI_VERSION: ${{ secrets.REACT_APP_UI_VERSION }}
 
           DISABLE_ESLINT_PLUGIN: "true"
         run: |
