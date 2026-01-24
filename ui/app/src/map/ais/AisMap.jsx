@@ -214,7 +214,7 @@ function AisMap({ mapContext, setIsLoading }) {
                         zoomOffset={-1}
                         keepBuffer={4}
                         url={process.env.REACT_APP_TILE_SERVER_URL}
-                        attribution={process.env.REACT_APP_TILE_SERVER_URL_ATTRIBUTION}
+                        attribution={process.env.REACT_APP_TILE_SERVER_ATTRIBUTION}
         />
     ));
 
