@@ -13,7 +13,7 @@ export default function Sidebar({ handleCreateNewZone,
                                   zones, 
                                   setFlyToLocation,
                                   isLoading }) {
-
+                                    
   const currentMode = useSelector(state => state.currentMode);
   const isMobile = window.innerWidth <= 750;
   const [ isMinimized, setIsMinimized ] = useState(false);

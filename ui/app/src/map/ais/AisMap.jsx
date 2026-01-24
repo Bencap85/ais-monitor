@@ -1,5 +1,5 @@
 import { MapContainer, TileLayer } from 'react-leaflet';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import React from 'react';
 import TileTracker from '../TileTracker.jsx';
 import CenterLogger from '../CenterLogger.jsx';
@@ -12,7 +12,6 @@ import './AisMap.css';
 import 'leaflet/dist/leaflet.css';
 
 const REPOSITORY_SERVICE_BASE_URL = process.env.REACT_APP_REPOSITORY_SERVICE_BASE_URL;
-const MAPBOX_API_KEY = process.env.REACT_APP_MAPBOX_API_KEY;
 
 // Get or set unique ID to be sent to API with requests
 let clientId = localStorage.getItem("clientId");
@@ -22,7 +21,7 @@ if (!clientId) {
     localStorage.setItem("clientId", clientId);
 }
               
-export default function AisMap({ mapContext, setIsLoading }) {
+function AisMap({ mapContext, setIsLoading }) {
 
     const controllerRef = useRef(null);
     const debounceTimerRef = useRef(null);
@@ -209,6 +208,16 @@ export default function AisMap({ mapContext, setIsLoading }) {
         return false;
     };
 
+    const tileLayer = useMemo(() => (
+        <TileLayer
+                        tileSize={512}
+                        zoomOffset={-1}
+                        keepBuffer={4}
+                        url={process.env.REACT_APP_TILE_SERVER_URL}
+                        attribution={process.env.REACT_APP_TILE_SERVER_URL_ATTRIBUTION}
+        />
+    ));
+
     return (
         <div className='map-view-container ais-map-container' >
             <div id='map-container-div'>
@@ -217,15 +226,12 @@ export default function AisMap({ mapContext, setIsLoading }) {
                     center={[mapContext.current.lat, mapContext.current.lng]}
                     zoom={mapContext.current.zoom}
                     minZoom={4}
-                    maxZoom={18}
+                    maxZoom={16}
                     zoomControl={false}
                     worldCopyJump={true}
                 >
                     <TileTracker onTilesChange={handleTilesChange} />
-                    <TileLayer
-                        url={`https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=${MAPBOX_API_KEY}`}
-                        attribution='&copy; MapTiler & OpenStreetMap contributors'
-                    />
+                    {tileLayer}
                     <CenterLogger mapContext={mapContext} />
                     <ShipSocketListener
                         visibleTilesRef={visibleTilesRef} 
@@ -241,3 +247,5 @@ export default function AisMap({ mapContext, setIsLoading }) {
         </div>
     )
 }
+
+export default React.memo(AisMap);
