@@ -400,14 +400,14 @@ export default function ShipMarkerDrawer({ handleAisShipClick }) {
                 <div class=${trailPopupClassName}>
                     <span class="key">Speed:</span> ${prevPointData.Sog} knots<br/>
                     <span class="key">Heading:</span> ${prevPointData.TrueHeading}°<br/>
-                    <span class="key">Time:</span> ${new Date(prevPointData.Timestamp).toLocaleString()}
+                    <span class="key">Time:</span> ${new Date(prevPointData.Timestamp).toISOString().split("T")[1].split(".")[0]} GMT
                 </div>
             `;
             const popupContent = `
                 <div class=${trailPopupClassName}>
                     <span class="key">Speed:</span> ${pointData.Sog} knots<br/>
                     <span class="key">Heading:</span> ${pointData.TrueHeading}°<br/>
-                    <span class="key">Time:</span> ${new Date(pointData.Timestamp).toLocaleString()}
+                    <span class="key">Time:</span> ${new Date(pointData.Timestamp).toISOString().split("T")[1].split(".")[0]} GMT
                 </div>
             `;
 
