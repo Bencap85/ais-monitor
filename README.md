@@ -18,7 +18,6 @@ Users can:
 
 
 ## System Architecture
-**AIS Monitor** is composed of several components:
 
 ### Backend
 Event‑driven microservices written in Python
