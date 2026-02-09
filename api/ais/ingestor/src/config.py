@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     base_path: str = "/ingestor/api/v1"
  
     class Config:
-        env_file = "../.env"
+        env_file = "../../.env"
         env_file_encoding = "utf-8"
 
 settings = Settings()

@@ -83,3 +83,82 @@ Storing this large-scale temporal data resulted in the database growing by milli
 **Solution:** 
 Partitioning the database by time massively reduced table size, minimized index bloat, and improved the performance of time-based queries by grouping data by time. The PostgreSQL extension TimescaleDB was used to handle this partitioning and maintain a 7-day rolling window of data.
 
+## Getting Started
+This project includes:
+  - a containerized AWS‑native backend (running against LocalStack)
+  - a React UI
+  - Terraform‑managed AWS resources (SNS/SQS)
+
+Local development uses Docker Compose and LocalStack to simulate AWS services.
+
+1. Install prerequisites
+    
+    You will need:
+    - Docker + Docker Compose
+    - Terraform (v1.5+ recommended)
+    - Node.js  (v18+ recommended)
+
+2. Clone the repository
+    ```
+    git clone https://github.com/Bencap85/ais-monitor.git
+    cd ship-detector
+    ```
+
+3. Set up backend environment variables
+    ```
+    cd api
+    cp .env.example .env
+    ```
+    Only one value must be updated:
+
+    `WS_API_KEY=your_AISStream_API_key`
+
+    All other values can remain as provided.
+
+4. Start and build LocalStack infrastructure
+    
+    Run this command to start LocalStack: `docker compose --profile infra up --build -d`
+
+5. Provision AWS resources with Terraform
+
+    ```
+    cd terraform/dev
+    terraform init
+    terraform apply -y
+    ```
+
+    Note: The command `terraform output` will print the LocalStack endpoints. The configuration provided in the .env.example should be correct, but the values can be confirmed here.
+
+6. Start backend services
+
+    From the api directory:
+    ```
+    cd ../
+    docker compose --profile dev up --build -d
+    ```
+    This starts:
+      - Ingestor service
+      - Repository service
+      - Broadcaster service
+      - PostgreSQL database with PostGIS and TimescaleDB
+
+7. Set up and start the UI
+
+    ```
+    cd ../ui/app
+    cp .env.example .env
+    ```
+
+    A free example tile server is provided in the .env.example. If you wish, a different provider can be specified by updating:
+    ```
+    REACT_APP_TILE_SERVER_URL=
+    REACT_APP_TILE_SERVER_ATTRIBUTION=
+    ```
+
+    Then start the UI:
+    ```
+    npm install
+    npm start
+    ```
+    The UI will be available at:
+    `http://localhost:3000`

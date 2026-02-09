@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     base_path: str = "/broadcaster/api/v1"
 
     class Config:
-        env_file = "../.env"
+        env_file = "../../.env"
         env_file_encoding = "utf-8"
 
 
