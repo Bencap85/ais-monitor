@@ -101,7 +101,7 @@ Local development uses Docker Compose and LocalStack to simulate AWS services.
 2. Clone the repository
     ```
     git clone https://github.com/Bencap85/ais-monitor.git
-    cd ship-detector
+    cd ais-monitor
     ```
 
 3. Set up backend environment variables
@@ -110,30 +110,31 @@ Local development uses Docker Compose and LocalStack to simulate AWS services.
     cp .env.example .env
     ```
     Only one value must be updated:
-
     `WS_API_KEY=your_AISStream_API_key`
-
     All other values can remain as provided.
 
 4. Start and build LocalStack infrastructure
     
     Run this command to start LocalStack: `docker compose --profile infra up --build -d`
 
-5. Provision AWS resources with Terraform
+5. Provision (LocalStack) AWS resources with Terraform
 
     ```
     cd terraform/dev
     terraform init
-    terraform apply -y
+    terraform apply -auto-approve
     ```
 
     Note: The command `terraform output` will print the LocalStack endpoints. The configuration provided in the .env.example should be correct, but the values can be confirmed here.
 
 6. Start backend services
 
-    From the api directory:
+    Return to api directory:
     ```
-    cd ../
+    cd ../..
+    ```
+    And run:
+    ```
     docker compose --profile dev up --build -d
     ```
     This starts:
