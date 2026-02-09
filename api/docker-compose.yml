@@ -5,7 +5,7 @@ services:
       context: ./ais/ws-broadcaster
       dockerfile: Dockerfile
     env_file:
-      - ./ais/ws-broadcaster/.env
+      - .env
     volumes:
       - ./ais/ws-broadcaster/src:/app
     container_name: ais_ws_broadcaster
@@ -19,7 +19,7 @@ services:
       context: ./ais/repository
       dockerfile: Dockerfile
     env_file:
-      - ./ais/repository/.env
+      - .env
     volumes:
       - ./ais/repository/src:/app
     container_name: ais_repository
@@ -35,7 +35,7 @@ services:
       context: ./ais/ingestor
       dockerfile: Dockerfile
     env_file:
-      - ./ais/ingestor/.env
+      - .env
     volumes:
       - ./ais/ingestor/src:/app
     ports:
